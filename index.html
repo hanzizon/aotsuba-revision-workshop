@@ -1355,13 +1355,20 @@ main{
   font-size:10px;
   color:#A1A6B3;
 }
-.memo-close{
+.memo-head-actions{
   margin-left:auto;
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+.memo-reset,
+.memo-close{
   padding:5px 8px;
   font-size:10px;
-  color:var(--muted);
   background:#fff;
 }
+.memo-reset{color:var(--accent)}
+.memo-close{color:var(--muted)}
 .memo-text{
   display:block;
   width:100%;
@@ -1427,7 +1434,10 @@ main{
     <div class="memo-head">
       <strong>메모장</strong>
       <span class="memo-status" id="memoStatus">자동 저장</span>
-      <button type="button" class="memo-close" id="memoClose">닫기</button>
+      <div class="memo-head-actions">
+        <button type="button" class="memo-reset" id="memoReset">초기화</button>
+        <button type="button" class="memo-close" id="memoClose">닫기</button>
+      </div>
     </div>
     <textarea id="memoText" class="memo-text" placeholder="아무거나 적어 두세요." aria-label="메모장"></textarea>
   </div>
@@ -1606,6 +1616,7 @@ main{
       <tbody id="body"></tbody>
     </table>
   </div>
+  <div class="footer-note">HWPX는 브라우저에서 직접 읽을 수 있지만, 구형 HWP 바이너리는 지원하지 않습니다. DOCX/HWPX 읽기는 JSZip을 사용하며 인터넷 연결이 필요할 수 있습니다. 겹낫표 또는 쌍따옴표로 묶인 문장은 길이와 관계없이 한 문단으로 분류됩니다. 각 셀은 직접 수정할 수 있습니다.</div>
   <div class="footer-signature">아오츠바 츠하자.</div>
 </main>
 <div class="toast" id="toast"></div>
@@ -4493,6 +4504,20 @@ document.querySelector("#memoTrigger")?.addEventListener("keydown",e=>{
   }
 });
 document.querySelector("#memoClose")?.addEventListener("click",()=>setMemoOpen(false));
+document.querySelector("#memoReset")?.addEventListener("click",()=>{
+  const memo=document.querySelector("#memoText");
+  if(!memo || !memo.value) return;
+  if(!window.confirm("메모 내용을 모두 지울까요?")) return;
+  memo.value="";
+  try{ localStorage.removeItem(MEMO_STORAGE_KEY); }catch(err){ console.error("메모 초기화 실패",err); }
+  const status=document.querySelector("#memoStatus");
+  if(status){
+    status.textContent="초기화됨";
+    clearTimeout(status.__resetTimer);
+    status.__resetTimer=setTimeout(()=>status.textContent="자동 저장",900);
+  }
+  memo.focus();
+});
 document.querySelector("#memoText")?.addEventListener("input",()=>{
   const status=document.querySelector("#memoStatus");
   if(status) status.textContent="저장 중…";
@@ -4530,8 +4555,7 @@ function buildTempSaveState(){
     segmentMode:document.querySelector("#segmentMode")?.value || "original",
     fontFamily:document.querySelector("#fontFamilySelect")?.value || "",
     fontSize:document.querySelector("#fontSizeSelect")?.value || "11pt",
-    manualTexts:[...document.querySelectorAll(".drop .manual-text")].map(el=>el.value),
-    memoText:document.querySelector("#memoText")?.value || ""
+    manualTexts:[...document.querySelectorAll(".drop .manual-text")].map(el=>el.value)
   };
 }
 
@@ -4592,12 +4616,6 @@ function restoreTempDraft(){
   document.querySelectorAll(".drop .manual-text").forEach((el,i)=>{
     el.value=manualTexts[i] ?? (rawDocs[i]?.join("\n\n") || "");
   });
-
-  const memo=document.querySelector("#memoText");
-  if(memo && typeof saved.memoText==="string"){
-    memo.value=saved.memoText;
-    try{ localStorage.setItem(MEMO_STORAGE_KEY,saved.memoText); }catch(err){}
-  }
 
   document.body.classList.toggle("proof-off",!proofEnabled);
   const proofBtn=document.querySelector("#toggleProofBtn");
