@@ -4664,8 +4664,7 @@ document.querySelector("#tempLoadBtn")?.addEventListener("click",()=>{
 // 5분마다 조용히 자동 임시저장합니다.
 setInterval(()=>saveTempDraft({showToast:false}),TEMP_SAVE_INTERVAL);
 
-// 브라우저에 남아 있는 임시저장본이 있으면 시작할 때 자동 복원합니다.
-const tempDraftRestored=restoreTempDraft();
+// 임시저장본은 자동 복원하지 않고, 사용자가 불러오기 버튼을 눌렀을 때만 복원합니다.
 
 try{
   render();
