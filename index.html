@@ -834,29 +834,36 @@ body.proof-off td:nth-child(3){
 
 
 @media(max-width:900px){
+  .upload-accordion{
+    width:100%;
+    min-width:0;
+    max-width:100%;
+  }
+
   .upload-accordion .uploads{
     display:flex !important;
     flex-direction:row !important;
     gap:12px;
+    width:100%;
+    min-width:0;
+    max-width:100%;
     overflow-x:auto;
     overflow-y:hidden;
     -webkit-overflow-scrolling:touch;
     scroll-snap-type:x proximity;
     scroll-padding-left:12px;
-    padding:12px 18px 12px 12px;
+    padding:12px;
+    box-sizing:border-box;
   }
 
-  .upload-accordion .drop{
-    flex:0 0 75%;
-    min-width:75%;
-    max-width:75%;
-    scroll-snap-align:start;
-  }
-
+  .upload-accordion .drop,
   body.proof-off .upload-accordion .drop{
-    flex-basis:75%;
-    min-width:75%;
-    max-width:75%;
+    flex:0 0 calc(100% - 24px);
+    width:calc(100% - 24px);
+    min-width:calc(100% - 24px);
+    max-width:calc(100% - 24px);
+    scroll-snap-align:start;
+    box-sizing:border-box;
   }
 }
 
@@ -2113,21 +2120,34 @@ document.querySelector("#floatingToggleBtn")?.addEventListener("click",()=>{
 });
 setFloatingToolbar(true);
 
-let bgImageEnabled=false;
-function setBgImageEnabled(on){
-  bgImageEnabled=on;
+const bgImages=[
+  {src:"./aotsuba-bg.png",label:"이미지 1"},
+  {src:"./aotsuba-bg-2.png",label:"이미지 2"},
+  {src:"./aotsuba-bg-3.png",label:"이미지 3"}
+];
+let bgImageIndex=-1;
+function setBgImageIndex(index){
   const img=document.querySelector("#aotsubaBg");
   const btn=document.querySelector("#bgImageToggle");
-  img?.classList.toggle("is-off",!on);
-  if(btn){
-    btn.textContent=on ? "이미지 ON" : "이미지 OFF";
-    btn.setAttribute("aria-pressed",String(on));
+  bgImageIndex=index;
+  if(!img||!btn)return;
+  if(index<0||index>=bgImages.length){
+    img.classList.add("is-off");
+    btn.textContent="이미지 OFF";
+    btn.setAttribute("aria-pressed","false");
+    return;
   }
+  const current=bgImages[index];
+  img.src=current.src;
+  img.classList.remove("is-off");
+  btn.textContent=current.label;
+  btn.setAttribute("aria-pressed","true");
 }
 document.querySelector("#bgImageToggle")?.addEventListener("click",()=>{
-  setBgImageEnabled(!bgImageEnabled);
+  const nextIndex = (bgImageIndex>=bgImages.length-1) ? -1 : bgImageIndex+1;
+  setBgImageIndex(nextIndex);
 });
-setBgImageEnabled(false);
+setBgImageIndex(-1);
 
 
 
