@@ -1232,9 +1232,76 @@ body.is-empty .result-controls{
   color:#4B50CC;
 }
 
+
+/* 우측 하단 배경 캐릭터 이미지 */
+.aotsuba-bg{
+  position:fixed;
+  right:0;
+  bottom:0;
+  width:min(46vw,760px);
+  max-height:78vh;
+  object-fit:contain;
+  object-position:right bottom;
+  pointer-events:none;
+  user-select:none;
+  z-index:-1;
+  opacity:.50;
+}
+body{
+  position:relative;
+  z-index:0;
+}
+header,
+main{
+  position:relative;
+  z-index:1;
+}
+.toast{
+  z-index:100;
+}
+@media(max-width:900px){
+  .aotsuba-bg{
+    width:min(72vw,560px);
+    max-height:58vh;
+    opacity:.50;
+  }
+}
+
+
+.aotsuba-bg.is-off{
+  display:none;
+}
+.bg-image-toggle{
+  position:fixed;
+  right:10px;
+  bottom:10px;
+  z-index:2;
+  border:1px solid rgba(120,126,145,.22);
+  background:rgba(255,255,255,.42);
+  color:rgba(75,85,99,.48);
+  font-size:10px;
+  font-weight:600;
+  line-height:1;
+  padding:4px 6px;
+  border-radius:7px;
+  box-shadow:none;
+  backdrop-filter:blur(2px);
+  -webkit-backdrop-filter:blur(2px);
+  opacity:.72;
+}
+.bg-image-toggle:hover,
+.bg-image-toggle:focus-visible{
+  opacity:1;
+  color:rgba(75,85,99,.72);
+  background:rgba(255,255,255,.62);
+  outline:none;
+}
+
 </style>
 </head>
 <body>
+<img class="aotsuba-bg is-off" id="aotsubaBg" src="./aotsuba-bg.png" alt="" aria-hidden="true">
+<button type="button" class="bg-image-toggle" id="bgImageToggle" aria-pressed="false">이미지 OFF</button>
 <header>
   <div class="top">
     <div class="top-left">
@@ -2045,6 +2112,22 @@ document.querySelector("#floatingToggleBtn")?.addEventListener("click",()=>{
   toast(floatingToolbarEnabled ? "둥둥 뜹니다!" : "얌전히 내려앉았습니다.");
 });
 setFloatingToolbar(true);
+
+let bgImageEnabled=false;
+function setBgImageEnabled(on){
+  bgImageEnabled=on;
+  const img=document.querySelector("#aotsubaBg");
+  const btn=document.querySelector("#bgImageToggle");
+  img?.classList.toggle("is-off",!on);
+  if(btn){
+    btn.textContent=on ? "이미지 ON" : "이미지 OFF";
+    btn.setAttribute("aria-pressed",String(on));
+  }
+}
+document.querySelector("#bgImageToggle")?.addEventListener("click",()=>{
+  setBgImageEnabled(!bgImageEnabled);
+});
+setBgImageEnabled(false);
 
 
 
