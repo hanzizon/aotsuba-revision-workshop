@@ -1391,6 +1391,44 @@ main{
     min-height:42vh;
     font-size:16px;
   }
+  .cell{
+    font-size:10pt;
+  }
+}
+
+
+/* 주요 작업 버튼 글자 크기만 1px 확대 — 버튼/블록 크기는 유지 */
+#toggleProofBtn,
+#demoBtn,
+#clearBtn,
+#tempSaveBtn,
+#tempLoadBtn,
+#spellBtn,
+#synonymBtn,
+#choose2,
+#choose3{
+  font-size:11px;
+}
+#spellBtn,
+#synonymBtn,
+#choose2,
+#choose3{
+  white-space:nowrap;
+}
+
+/* 작업실 제목은 기존보다 1px 크게 */
+.brand{
+  font-size:calc(13pt + 1px);
+}
+
+/* 메모 본문: PC 11pt / 모바일 10pt */
+.memo-text{
+  font-size:11pt;
+}
+@media(max-width:900px){
+  .memo-text{
+    font-size:10pt;
+  }
 }
 
 </style>
@@ -1422,8 +1460,8 @@ main{
         </div>
       </div>
       <div class="action-row">
-        <button type="button" class="primary" id="exportBtn">최종본 TXT 저장</button>
-        <button type="button" class="primary" id="exportMdBtn">최종본 MD 저장</button>
+        <button type="button" class="primary" id="exportBtn">TXT로 내보내기</button>
+        <button type="button" class="primary" id="exportMdBtn">MD로 내보내기</button>
       </div>
     </div>
   </div>
@@ -1510,10 +1548,10 @@ main{
       </select>
     </div>
     <div class="toolbar-row toolbar-row-actions">
-      <button type="button" id="spellBtn"><span class="desktop-label">이것저것 검사</span><span class="mobile-label">이것저것<br>검사</span></button>
+      <button type="button" id="spellBtn">이것저것 검사</button>
       <button type="button" id="synonymBtn">유의어 추천</button>
-      <button type="button" id="choose2"><span class="desktop-label">전부 개고</span><span class="mobile-label">전부<br>개고</span></button>
-      <button type="button" id="choose3" class="proof-only"><span class="desktop-label">전부 퇴고</span><span class="mobile-label">전부<br>퇴고</span></button>
+      <button type="button" id="choose2">전부 개고</button>
+      <button type="button" id="choose3" class="proof-only">전부 퇴고</button>
       <div class="grow"></div>
       <div class="toolbar-tail">
         <div class="legend">
@@ -1900,12 +1938,6 @@ function updateFontSelectPreview(){
 }
 document.querySelector("#fontFamilySelect")?.addEventListener("change",updateFontSelectPreview);
 updateFontSelectPreview();
-
-// 첫 접속 기본 본문 크기: 모바일 10pt, PC 11pt
-const defaultFontSizeSelect=document.querySelector("#fontSizeSelect");
-if(defaultFontSizeSelect){
-  defaultFontSizeSelect.value=window.matchMedia("(max-width:900px)").matches ? "10pt" : "11pt";
-}
 
 function applyBodyFont(){
   const family=document.querySelector("#fontFamilySelect")?.value;
