@@ -1414,11 +1414,11 @@ main{
       <div class="action-row">
         <div class="action-split">
           <button type="button" id="demoBtn">예시</button>
-          <button type="button" id="tempSaveBtn">임시저장</button>
+          <button type="button" id="clearBtn">초기화</button>
         </div>
         <div class="action-split">
+          <button type="button" id="tempSaveBtn">임시저장</button>
           <button type="button" id="tempLoadBtn">불러오기</button>
-          <button type="button" id="clearBtn">초기화</button>
         </div>
       </div>
       <div class="action-row">
@@ -1439,7 +1439,7 @@ main{
         <button type="button" class="memo-close" id="memoClose">닫기</button>
       </div>
     </div>
-    <textarea id="memoText" class="memo-text" placeholder="아무거나 적어 두세요." aria-label="메모장"></textarea>
+    <textarea id="memoText" class="memo-text" placeholder="망상을 시작합니다." aria-label="메모장"></textarea>
   </div>
 </section>
 
@@ -1900,6 +1900,12 @@ function updateFontSelectPreview(){
 }
 document.querySelector("#fontFamilySelect")?.addEventListener("change",updateFontSelectPreview);
 updateFontSelectPreview();
+
+// 첫 접속 기본 본문 크기: 모바일 10pt, PC 11pt
+const defaultFontSizeSelect=document.querySelector("#fontSizeSelect");
+if(defaultFontSizeSelect){
+  defaultFontSizeSelect.value=window.matchMedia("(max-width:900px)").matches ? "10pt" : "11pt";
+}
 
 function applyBodyFont(){
   const family=document.querySelector("#fontFamilySelect")?.value;
