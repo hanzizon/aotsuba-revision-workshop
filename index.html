@@ -107,7 +107,12 @@ button:hover,.btn:hover{border-color:#c9cce0}
 
 
 
-#demoBtn,#clearBtn,#choose2,#choose3,#synonymBtn{
+#choose2,#choose3,#synonymBtn,#tempSaveBtn,#tempLoadBtn{
+  color:var(--accent);
+  background:#fff;
+  border-color:var(--line);
+}
+#demoBtn,#clearBtn{
   color:var(--accent);
   background:#fff;
   border-color:var(--line);
@@ -115,7 +120,10 @@ button:hover,.btn:hover{border-color:#c9cce0}
 
 
 .action-row{display:flex;gap:8px;flex-wrap:nowrap}
-.action-row button{flex:1}
+.action-row > button,
+.action-row > .action-split{flex:1;min-width:0}
+.action-split{display:flex;gap:8px;min-width:0}
+.action-split button{flex:1;min-width:0;padding-left:6px;padding-right:6px}
 .status-row{justify-content:flex-start}
 .status-row .badge{display:inline-block;flex:0 0 auto}
 
@@ -1193,9 +1201,10 @@ body.is-empty .result-controls{
   display:none;
 }
 .footer-signature{
-  margin-top:10px;
-  font-size:11px;
-  color:#A4A8B3;
+  margin-top:12px;
+  font-size:12px;
+  color:var(--muted);
+  line-height:1.55;
 }
 
 
@@ -1323,8 +1332,14 @@ main{
 
     <div class="actions">
       <div class="action-row">
-        <button type="button" id="demoBtn">예시</button>
-        <button type="button" id="clearBtn">초기화</button>
+        <div class="action-split">
+          <button type="button" id="demoBtn">예시</button>
+          <button type="button" id="tempSaveBtn">임시저장</button>
+        </div>
+        <div class="action-split">
+          <button type="button" id="tempLoadBtn">불러오기</button>
+          <button type="button" id="clearBtn">초기화</button>
+        </div>
       </div>
       <div class="action-row">
         <button type="button" class="primary" id="exportBtn">최종본 TXT 저장</button>
@@ -1507,11 +1522,7 @@ main{
       <tbody id="body"></tbody>
     </table>
   </div>
-  <div class="footer-note">
-    HWPX는 브라우저에서 직접 읽을 수 있지만, 구형 HWP 바이너리는 지원하지 않습니다.
-    DOCX/HWPX 읽기는 JSZip을 사용하며 인터넷 연결이 필요할 수 있습니다. 문단 분리 기준은 ‘문장 단위’와 ‘원본 단위’ 중에서 선택할 수 있습니다. 겹낫표(『 』) 또는 쌍따옴표(“ ”) 하나로 묶인 한 사람의 대사는 문장이 길어도 한 문단으로 유지됩니다. 각 셀은 직접 수정할 수 있습니다.
-    <div class="footer-signature">아오츠바 츠하자.</div>
-  </div>
+  <div class="footer-signature">아오츠바 츠하자.</div>
 </main>
 <div class="toast" id="toast"></div>
 
@@ -4343,6 +4354,166 @@ document.querySelector("#spellBtn").onclick=()=>{
 };
 document.querySelector("#closeSpell").onclick=()=>{document.querySelector("#spellPanel").classList.remove("open");document.querySelector("#spellBtn")?.classList.remove("active");clearSpellMarks();};
 
+
+const TEMP_SAVE_KEY="aotsubaRevisionWorkshop.temp.v1";
+const TEMP_SAVE_INTERVAL=5*60*1000;
+
+function captureEditableCellsForTempSave(){
+  document.querySelectorAll(".cell[data-doc][data-row]").forEach(cell=>{
+    const d=Number(cell.dataset.doc);
+    const r=Number(cell.dataset.row);
+    if(Number.isInteger(d) && Number.isInteger(r) && docs[d]){
+      docs[d][r]=cell.innerText.trim();
+    }
+  });
+}
+
+function buildTempSaveState(){
+  captureEditableCellsForTempSave();
+  return {
+    version:1,
+    savedAt:Date.now(),
+    title:document.querySelector("#novelTitle")?.value || "",
+    docs:docs.map(arr=>[...arr]),
+    rawDocs:rawDocs.map(arr=>[...arr]),
+    sentenceDocs:sentenceDocs.map(arr=>[...arr]),
+    fileNames:[...fileNames],
+    picks:[...picks],
+    proofEnabled,
+    displayDiffEnabled,
+    segmentMode:document.querySelector("#segmentMode")?.value || "original",
+    fontFamily:document.querySelector("#fontFamilySelect")?.value || "",
+    fontSize:document.querySelector("#fontSizeSelect")?.value || "11pt",
+    manualTexts:[...document.querySelectorAll(".drop .manual-text")].map(el=>el.value)
+  };
+}
+
+function formatTempSaveTime(date=new Date()){
+  const pad=n=>String(n).padStart(2,"0");
+  return `${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+}
+
+function saveTempDraft({showToast=false}={}){
+  try{
+    const savedAt=new Date();
+    localStorage.setItem(TEMP_SAVE_KEY,JSON.stringify(buildTempSaveState()));
+    if(showToast) toast(`${formatTempSaveTime(savedAt)}에 임시저장했습니다.`);
+    return true;
+  }catch(err){
+    console.error("임시저장 실패",err);
+    if(showToast) toast("임시저장하지 못했습니다.");
+    return false;
+  }
+}
+
+function restoreTempDraft(){
+  let saved=null;
+  try{
+    const raw=localStorage.getItem(TEMP_SAVE_KEY);
+    if(!raw) return false;
+    saved=JSON.parse(raw);
+  }catch(err){
+    console.error("임시저장본 읽기 실패",err);
+    return false;
+  }
+  if(!saved || saved.version!==1) return false;
+
+  for(let i=0;i<3;i++){
+    docs[i]=Array.isArray(saved.docs?.[i]) ? [...saved.docs[i]] : [];
+    rawDocs[i]=Array.isArray(saved.rawDocs?.[i]) ? [...saved.rawDocs[i]] : [];
+    sentenceDocs[i]=Array.isArray(saved.sentenceDocs?.[i]) ? [...saved.sentenceDocs[i]] : [];
+    fileNames[i]=saved.fileNames?.[i] || "";
+  }
+  picks=Array.isArray(saved.picks) ? [...saved.picks] : [];
+
+  if(typeof saved.proofEnabled==="boolean") proofEnabled=saved.proofEnabled;
+  if(typeof saved.displayDiffEnabled==="boolean") displayDiffEnabled=saved.displayDiffEnabled;
+
+  const title=document.querySelector("#novelTitle");
+  if(title) title.value=saved.title || "";
+
+  const segment=document.querySelector("#segmentMode");
+  if(segment && ["sentence","original"].includes(saved.segmentMode)) segment.value=saved.segmentMode;
+
+  const font=document.querySelector("#fontFamilySelect");
+  if(font && [...font.options].some(o=>o.value===saved.fontFamily)) font.value=saved.fontFamily;
+
+  const size=document.querySelector("#fontSizeSelect");
+  if(size && [...size.options].some(o=>o.value===saved.fontSize)) size.value=saved.fontSize;
+
+  const manualTexts=Array.isArray(saved.manualTexts) ? saved.manualTexts : [];
+  document.querySelectorAll(".drop .manual-text").forEach((el,i)=>{
+    el.value=manualTexts[i] ?? (rawDocs[i]?.join("\n\n") || "");
+  });
+
+  document.body.classList.toggle("proof-off",!proofEnabled);
+  const proofBtn=document.querySelector("#toggleProofBtn");
+  if(proofBtn){
+    proofBtn.textContent=proofEnabled ? "퇴고 ON" : "퇴고 OFF";
+    proofBtn.classList.toggle("on",proofEnabled);
+    proofBtn.classList.toggle("off",!proofEnabled);
+  }
+
+  const displayBtn=document.querySelector("#displayToggleBtn");
+  if(displayBtn){
+    displayBtn.textContent=displayDiffEnabled ? "ON" : "OFF";
+    displayBtn.classList.toggle("on",displayDiffEnabled);
+    displayBtn.classList.toggle("off",!displayDiffEnabled);
+  }
+
+  updateFontSelectPreview();
+  return true;
+}
+
+document.querySelector("#tempSaveBtn")?.addEventListener("click",()=>{
+  flashTapPressProof(document.querySelector("#tempSaveBtn"));
+  saveTempDraft({showToast:true});
+});
+
+function hasCurrentWorkspaceContent(){
+  if((document.querySelector("#novelTitle")?.value || "").trim()) return true;
+  if(docs.some(arr=>arr.some(text=>(text||"").trim()))) return true;
+  if(rawDocs.some(arr=>arr.some(text=>(text||"").trim()))) return true;
+  return [...document.querySelectorAll(".drop .manual-text")].some(el=>el.value.trim());
+}
+
+document.querySelector("#tempLoadBtn")?.addEventListener("click",()=>{
+  flashTapPressProof(document.querySelector("#tempLoadBtn"));
+
+  let hasSaved=false;
+  try{
+    hasSaved=!!localStorage.getItem(TEMP_SAVE_KEY);
+  }catch(err){
+    console.error("임시저장본 확인 실패",err);
+  }
+
+  if(!hasSaved){
+    toast("저장된 임시저장본이 없습니다.");
+    return;
+  }
+
+  if(hasCurrentWorkspaceContent()){
+    const ok=window.confirm("현재 작업을 임시저장본으로 바꿀까요?");
+    if(!ok) return;
+  }
+
+  if(restoreTempDraft()){
+    render();
+    applyBodyFont();
+    resetHistoryBase();
+    refreshSpellPanelIfOpen();
+    toast("불러오기에 성공했습니다!");
+  }else{
+    toast("임시저장본을 불러오지 못했습니다.");
+  }
+});
+
+// 5분마다 조용히 자동 임시저장합니다.
+setInterval(()=>saveTempDraft({showToast:false}),TEMP_SAVE_INTERVAL);
+
+// 브라우저에 남아 있는 임시저장본이 있으면 시작할 때 자동 복원합니다.
+const tempDraftRestored=restoreTempDraft();
+
 try{
   render();
 }catch(err){
@@ -4386,7 +4557,7 @@ resetHistoryBase();
 
 window.addEventListener("DOMContentLoaded",()=>{
 // iOS Safari에서 탭 반응이 둔한 경우를 대비해 주요 버튼에 touchend 보조 처리.
-  ["demoBtn","clearBtn","exportBtn","exportMdBtn","choose2","choose3","spellBtn","synonymBtn","toggleProofBtn","closeSpell","closeSyn"].forEach(id=>{
+  ["demoBtn","tempSaveBtn","tempLoadBtn","clearBtn","exportBtn","exportMdBtn","choose2","choose3","spellBtn","synonymBtn","toggleProofBtn","closeSpell","closeSyn"].forEach(id=>{
     const el=document.getElementById(id);
     if(!el) return;
     let touched=false;
