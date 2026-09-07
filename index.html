@@ -220,6 +220,27 @@ td:last-child,th:last-child{border-right:0}
 .spell-item{padding:10px 4px;border-bottom:1px solid var(--line);font-size:13px;line-height:1.55}
 .spell-item button{padding:5px 8px;margin-left:6px;font-size:11px}
 .spell-type{font-weight:800;margin-right:6px;color:var(--accent)}
+.spell-level{
+  display:inline-block;
+  margin-right:6px;
+  padding:2px 6px;
+  border-radius:999px;
+  font-size:10px;
+  font-weight:700;
+  line-height:1.2;
+  vertical-align:1px;
+}
+.spell-level.high{
+  background:#FDF1F1;
+  color:#B42318;
+  border:1px solid #F5C8C7;
+}
+.spell-level.confirm{
+  background:#F3F4F6;
+  color:#4B5563;
+  border:1px solid #E5E7EB;
+}
+
 
 #choose2,#choose3,#synonymBtn,#toggleProofBtn,#closeSpell,[data-spell-jump]{
   color:#4B50CC;
@@ -245,6 +266,56 @@ td:last-child,th:last-child{border-right:0}
 .spell-suggest{color:#4b50cc;font-weight:700}
 .spell-warn{text-decoration:underline wavy #d64545;text-decoration-thickness:1.5px;text-underline-offset:3px}
 
+.spell-warn.spell-review{text-decoration-color:#9CA3AF}
+.spell-warn.spell-style{
+  text-decoration-line:underline;
+  text-decoration-style:dotted;
+  text-decoration-color:#4B50CC;
+  text-decoration-thickness:1.5px;
+  text-underline-offset:3px;
+}
+.spell-group-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:8px 4px;
+  font-size:12px;
+  color:#4B5563;
+  background:#FAFBFE;
+  border-bottom:1px solid var(--line);
+}
+
+.spell-group{
+  border-bottom:1px solid var(--line);
+}
+.spell-group:last-child{border-bottom:0}
+.spell-group > summary{
+  list-style:none;
+  cursor:pointer;
+  user-select:none;
+}
+.spell-group > summary::-webkit-details-marker{display:none}
+.spell-group > summary::after{
+  content:"▾";
+  margin-left:8px;
+  font-size:11px;
+  transition:transform .16s ease;
+}
+.spell-group:not([open]) > summary::after{
+  transform:rotate(-90deg);
+}
+.spell-group-count{
+  margin-left:auto;
+}
+.spell-group-body{
+  border-top:1px solid var(--line);
+}
+
+.spell-group-head.review{background:#F7F7F9}
+.spell-group-head.style{background:#F5F5FC;color:#4B50CC}
+.spell-item-style{background:#FCFCFF}
+
+
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:rgba(22,24,29,.75);color:#fff;
 padding:10px 14px;border-radius:10px;font-size:13px;font-weight:700;z-index:100;opacity:0;pointer-events:none;
 transition:opacity .2s,transform .2s}.toast.show{opacity:1;transform:translateX(-50%) translateY(-4px)}
@@ -265,11 +336,11 @@ transition:opacity .2s,transform .2s}.toast.show{opacity:1;transform:translateX(
 .toolbar-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;width:100%}
 .toolbar-row-main input,.toolbar-row-main select{min-width:0}
 @media(max-width:900px){
-  .toolbar-row-main{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,.9fr);gap:8px}
+  .toolbar-row-main{display:grid;grid-template-columns:auto minmax(0,1.4fr) minmax(0,.9fr);gap:8px}
   .toolbar-row-main input,.toolbar-row-main select{width:100%}
+  .toolbar-row-main .floating-toggle-group{justify-self:start}
   .toolbar-row-actions{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
   .toolbar-row-actions .grow{display:none}
-  .toolbar-row-actions .legend{grid-column:1/-1}
   .toolbar-row-actions button{width:100%;padding-left:6px;padding-right:6px}
 }
 
@@ -953,6 +1024,214 @@ td{
   .manual-text{min-height:180px}
 }
 
+
+/* 맞춤법 결과 중요도 구분 */
+.spell-group-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding:9px 4px 7px;
+  border-bottom:1px solid var(--line);
+  font-size:12px;
+  color:#374151;
+  background:#fafbfe;
+}
+.spell-group-head strong{font-size:12px}
+.spell-group-head span{color:var(--muted);font-size:11px}
+.spell-group-head.review{
+  margin-top:4px;
+  color:#4B50CC;
+  background:#F7F7FD;
+}
+.spell-item-review{background:#FCFCFF}
+.spell-warn.spell-review{
+  text-decoration-color:#4B50CC;
+  text-decoration-style:wavy;
+}
+
+
+/* 검사 결과 3단계 색상 최종 지정 */
+.spell-group-head:not(.review):not(.style){
+  background:#FDF1F1 !important;
+  color:#B42318 !important;
+}
+.spell-group-head.review{
+  background:#F7F7F9 !important;
+  color:#4B5563 !important;
+}
+.spell-group-head.style{
+  background:#F5F5FC !important;
+  color:#4B50CC !important;
+}
+
+
+/* 스크롤 시 검색 툴바 + 열린 결과 패널을 함께 고정 */
+.floating-stack{
+  position:sticky;
+  top:10px;
+  z-index:30;
+}
+.floating-stack .toolbar{
+  position:relative;
+  top:auto;
+  z-index:auto;
+  box-shadow:
+    0 8px 18px rgba(25,30,50,.08),
+    0 2px 6px rgba(25,30,50,.05);
+}
+.floating-stack .syn-panel.open,
+.floating-stack .spell-panel.open{
+  max-height:min(56vh,520px);
+  overflow:auto;
+  overscroll-behavior:contain;
+  box-shadow:
+    0 10px 22px rgba(25,30,50,.07),
+    0 2px 6px rgba(25,30,50,.04);
+}
+@media(max-width:900px){
+  .floating-stack{
+    top:8px;
+  }
+  .floating-stack .syn-panel.open,
+  .floating-stack .spell-panel.open{
+    max-height:52vh;
+  }
+}
+
+
+/* 둥둥(고정 툴바) ON/OFF */
+.toolbar-tail{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+.floating-toggle-group{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  font-size:12px;
+  color:var(--text);
+  white-space:nowrap;
+}
+.floating-toggle-label{font-size:12px}
+.floating-toggle{
+  font-size:12px;
+  font-weight:700;
+  min-width:42px;
+  padding:6px 10px;
+  border-radius:8px;
+  border:1px solid var(--line);
+  transition:background .15s,border-color .15s,box-shadow .15s,transform .15s;
+}
+#floatingToggleBtn.on{
+  background:#ECEDEF;
+  color:#4B5563;
+  border-color:#D7D9DE;
+  box-shadow:
+    0 3px 8px rgba(25,30,50,.10),
+    inset 0 1px 2px rgba(25,30,50,.06);
+  transform:translateY(1px);
+}
+#floatingToggleBtn.off{
+  background:#fff;
+  color:#6B7280;
+  border-color:var(--line);
+  box-shadow:none;
+  transform:none;
+}
+body.toolbar-float-off .floating-stack{
+  position:relative !important;
+  top:auto !important;
+  z-index:auto !important;
+}
+body.toolbar-float-off .floating-stack .toolbar{
+  box-shadow:var(--shadow) !important;
+}
+body.toolbar-float-off .floating-stack .syn-panel.open,
+body.toolbar-float-off .floating-stack .spell-panel.open{
+  max-height:none;
+  overflow:visible;
+}
+
+@media(max-width:900px){
+  .toolbar-row-actions .toolbar-tail{
+    grid-column:1/-1;
+    width:100%;
+    justify-content:space-between;
+  }
+  .toolbar-row-actions .legend{
+    grid-column:auto;
+  }
+}
+
+
+.empty-state{
+  display:none;
+  margin-top:16px;
+  padding:34px 20px;
+  border:1px dashed #D8DBE6;
+  border-radius:16px;
+  background:#FBFBFD;
+  color:#8A90A0;
+  text-align:center;
+  font-size:13px;
+  line-height:1.7;
+}
+body.is-empty .empty-state{
+  display:block;
+}
+body.is-empty .table-wrap,
+body.is-empty .result-controls{
+  display:none;
+}
+.footer-signature{
+  margin-top:10px;
+  font-size:11px;
+  color:#A4A8B3;
+}
+
+
+.file-input-hidden{
+  position:absolute !important;
+  width:1px !important;
+  height:1px !important;
+  padding:0 !important;
+  margin:-1px !important;
+  overflow:hidden !important;
+  clip:rect(0,0,0,0) !important;
+  white-space:nowrap !important;
+  border:0 !important;
+}
+.file-drop-prompt{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-height:44px;
+  padding:9px 10px;
+  border:1px dashed #D7DAE5;
+  border-radius:10px;
+  background:#FAFAFD;
+  color:#7A8090;
+  font-size:12px;
+  text-align:center;
+  cursor:pointer;
+  transition:background .15s,border-color .15s,color .15s;
+  user-select:none;
+}
+.file-drop-prompt:hover,
+.file-drop-prompt:focus-visible{
+  border-color:#BFC3D7;
+  background:#F6F6FB;
+  color:#5F6675;
+  outline:none;
+}
+.drop.drag .file-drop-prompt{
+  border-color:var(--accent);
+  background:var(--accent2);
+  color:#4B50CC;
+}
+
 </style>
 </head>
 <body>
@@ -982,7 +1261,7 @@ td{
 </header>
 
 <main>
-  <details class="upload-accordion" open>
+  <details class="upload-accordion">
     <summary>
       <span>원고 파일</span>
     </summary>
@@ -992,7 +1271,8 @@ td{
     <div class="drop" data-i="0">
       <h3>① 초고</h3>
       <p>TXT / MD / DOCX / HWPX</p>
-      <input type="file" accept=".txt,.md,.markdown,.docx,.hwpx" />
+      <input class="file-input-hidden" type="file" accept=".txt,.md,.markdown,.docx,.hwpx" />
+      <div class="file-drop-prompt" role="button" tabindex="0">파일을 끌어다 놓아 주세요.</div>
       <div class="manual-input">
         <button type="button" class="manual-toggle">직접 입력</button>
         <div class="manual-panel" hidden>
@@ -1005,7 +1285,8 @@ td{
     <div class="drop" data-i="1">
       <h3>② 개고</h3>
       <p>두 번째 수정 단계</p>
-      <input type="file" accept=".txt,.md,.markdown,.docx,.hwpx" />
+      <input class="file-input-hidden" type="file" accept=".txt,.md,.markdown,.docx,.hwpx" />
+      <div class="file-drop-prompt" role="button" tabindex="0">파일을 끌어다 놓아 주세요.</div>
       <div class="manual-input">
         <button type="button" class="manual-toggle">직접 입력</button>
         <div class="manual-panel" hidden>
@@ -1018,7 +1299,8 @@ td{
     <div class="drop proof-only" data-i="2">
       <h3>③ 퇴고</h3>
       <p>최종 퇴고 단계</p>
-      <input type="file" accept=".txt,.md,.markdown,.docx,.hwpx" />
+      <input class="file-input-hidden" type="file" accept=".txt,.md,.markdown,.docx,.hwpx" />
+      <div class="file-drop-prompt" role="button" tabindex="0">파일을 끌어다 놓아 주세요.</div>
       <div class="manual-input">
         <button type="button" class="manual-toggle">직접 입력</button>
         <div class="manual-panel" hidden>
@@ -1031,23 +1313,30 @@ td{
   </section>
   </details>
 
+  <div class="floating-stack">
   <div class="toolbar">
     <div class="toolbar-row toolbar-row-main">
+      <div class="floating-toggle-group">
+        <span class="floating-toggle-label result-control-label">둥둥</span>
+        <button type="button" id="floatingToggleBtn" class="floating-toggle on">ON</button>
+      </div>
       <input id="search" type="search" placeholder="문단 검색" />
       <select id="segmentMode">
         <option value="sentence">문장 단위</option>
-        <option value="original">원본 단위</option>
+        <option value="original" selected>원본 단위</option>
       </select>
     </div>
     <div class="toolbar-row toolbar-row-actions">
-      <button type="button" id="choose2"><span class="desktop-label">전체 개고 선택</span><span class="mobile-label">전체<br>개고 선택</span></button>
-      <button type="button" id="choose3" class="proof-only"><span class="desktop-label">전체 퇴고 선택</span><span class="mobile-label">전체<br>퇴고 선택</span></button>
-      <button type="button" id="spellBtn"><span class="desktop-label">맞춤법·띄어쓰기 검사</span><span class="mobile-label">맞춤법·<br>띄어쓰기 검사</span></button>
+      <button type="button" id="spellBtn"><span class="desktop-label">이것저것 검사</span><span class="mobile-label">이것저것<br>검사</span></button>
       <button type="button" id="synonymBtn">유의어 추천</button>
+      <button type="button" id="choose2"><span class="desktop-label">전부 개고</span><span class="mobile-label">전부<br>개고</span></button>
+      <button type="button" id="choose3" class="proof-only"><span class="desktop-label">전부 퇴고</span><span class="mobile-label">전부<br>퇴고</span></button>
       <div class="grow"></div>
-      <div class="legend">
-        <span><i class="dot" style="background:var(--bad)"></i>삭제</span>
-        <span><i class="dot" style="background:var(--good)"></i>추가</span>
+      <div class="toolbar-tail">
+        <div class="legend">
+          <span><i class="dot" style="background:var(--bad)"></i>삭제</span>
+          <span><i class="dot" style="background:var(--good)"></i>추가</span>
+        </div>
       </div>
     </div>
   </div>
@@ -1066,16 +1355,17 @@ td{
 
   <div class="spell-panel" id="spellPanel">
     <div class="spell-head">
-      <strong>맞춤법·띄어쓰기 검사 결과</strong>
+      <strong>검사 결과</strong>
       <span class="spell-count" id="spellCount">검사 전</span>
       <div class="grow"></div>
       <button type="button" id="closeSpell">닫기</button>
     </div>
     <div class="spell-list" id="spellList"></div>
     <div class="footer-note" style="margin-top:10px">
-      이 검사는 웹앱 내부의 규칙 기반 보조 검사입니다. 자동으로 수정하지 않으며, 문학적 표현이나 의도적인 구어체는 오류가 아닐 수 있습니다.
+      맞춤법·띄어쓰기와 문체를 함께 점검합니다. 자동으로 수정하지 않으며, 문학적 표현이나 의도적인 구어체는 오류가 아닐 수 있습니다.
     </div>
   </div>
+  </div><!-- /.floating-stack -->
 
 
   <div class="result-controls">
@@ -1097,10 +1387,6 @@ td{
         <option value='Georgia,"Times New Roman",serif'
                 style='font-family:Georgia,"Times New Roman",serif'>
           세리프
-        </option>
-        <option value='"Noto Sans KR",sans-serif'
-                style='font-family:"Noto Sans KR",sans-serif'>
-          본고딕
         </option>
         <option value='"Noto Serif KR",serif'
                 style='font-family:"Noto Serif KR",serif'>
@@ -1132,7 +1418,8 @@ td{
       <button type="button" id="redoBtn" class="icon-btn" title="다시 실행" aria-label="다시 실행">↷</button>
     </div>
   </div>
-  <div class="table-wrap">
+  <div class="empty-state" id="emptyState">원고를 불러오거나 직접 입력해 주세요.</div>
+  <div class="table-wrap" id="tableWrap">
     <table>
 <thead>
         <tr>
@@ -1149,6 +1436,7 @@ td{
   <div class="footer-note">
     HWPX는 브라우저에서 직접 읽을 수 있지만, 구형 HWP 바이너리는 지원하지 않습니다.
     DOCX/HWPX 읽기는 JSZip을 사용하며 인터넷 연결이 필요할 수 있습니다. 문단 분리 기준은 ‘문장 단위’와 ‘원본 단위’ 중에서 선택할 수 있습니다. 겹낫표(『 』) 또는 쌍따옴표(“ ”) 하나로 묶인 한 사람의 대사는 문장이 길어도 한 문단으로 유지됩니다. 각 셀은 직접 수정할 수 있습니다.
+    <div class="footer-signature">아오츠바 츠하자.</div>
   </div>
 </main>
 <div class="toast" id="toast"></div>
@@ -1284,8 +1572,83 @@ function segmentParas(paras,mode){
   return out;
 }
 
+
+function splitIntoAlignedBlocks(text,targetCount){
+  const s=(text||"").trim();
+  if(!s) return Array(targetCount).fill("");
+
+  // 대사는 한 덩어리를 유지하고, 필요한 경우 뒤쪽을 빈 칸으로 맞춘다.
+  if(isSingleSpeechBlock(s)){
+    return [s,...Array(Math.max(0,targetCount-1)).fill("")];
+  }
+
+  const sentences=splitSentences(s);
+  if(targetCount<=1) return [sentences.join(" ")];
+  if(!sentences.length) return Array(targetCount).fill("");
+
+  // 버전마다 문장 수가 달라도 같은 원본 문단 안에서는 같은 행 수를 유지한다.
+  // 문장은 앞에서부터 최대한 고르게 나누고, 모자라는 행은 빈 칸으로 둔다.
+  const out=[];
+  let pos=0;
+  for(let i=0;i<targetCount;i++){
+    const leftSent=sentences.length-pos;
+    const leftBlocks=targetCount-i;
+    if(leftSent<=0){
+      out.push("");
+      continue;
+    }
+    const size=Math.max(1,Math.ceil(leftSent/leftBlocks));
+    out.push(sentences.slice(pos,pos+size).join(" "));
+    pos+=size;
+  }
+  return out;
+}
+
+function rebuildAlignedSentenceDocs(){
+  const active=[0,1,2].filter(i=>rawDocs[i]?.length);
+  if(!active.length) return;
+
+  // 한 버전만 있으면 기존 2~3문장 묶음 규칙을 그대로 쓴다.
+  if(active.length===1){
+    const i=active[0];
+    sentenceDocs[i]=segmentParas(rawDocs[i],"sentence");
+    return;
+  }
+
+  const counts=active.map(i=>rawDocs[i].length);
+
+  // 원본 문단 수가 서로 다르면 억지로 행을 맞추지 않는다.
+  // 잘못된 문단끼리 붙는 것보다 각 문서의 원래 경계를 보존하는 편이 안전하다.
+  if(!counts.every(n=>n===counts[0])){
+    active.forEach(i=>sentenceDocs[i]=segmentParas(rawDocs[i],"sentence"));
+    return;
+  }
+
+  const aligned={0:[],1:[],2:[]};
+  for(let p=0;p<counts[0];p++){
+    const perDoc={};
+    let target=1;
+
+    for(const i of active){
+      const para=rawDocs[i][p]||"";
+      const natural=isSingleSpeechBlock(para)
+        ? [para.trim()]
+        : chunkSentences(splitSentences(para));
+      perDoc[i]=natural;
+      target=Math.max(target,natural.length||1);
+    }
+
+    for(const i of active){
+      aligned[i].push(...splitIntoAlignedBlocks(rawDocs[i][p]||"",target));
+    }
+  }
+
+  for(const i of active) sentenceDocs[i]=aligned[i];
+}
+
 function applySegmentation(){
   const mode=document.querySelector("#segmentMode")?.value || "sentence";
+  if(mode==="sentence") rebuildAlignedSentenceDocs();
   for(let i=0;i<3;i++){
     if(mode==="original"){
       docs[i]=[...rawDocs[i]];
@@ -1326,6 +1689,7 @@ function baseHTML(base,target){
 }
 function render(){
   const n=proofEnabled ? Math.max(docs[0].length,docs[1].length,docs[2].length) : Math.max(docs[0].length,docs[1].length);
+  document.body.classList.toggle("is-empty", n===0);
   if(picks.length<n) for(let i=picks.length;i<n;i++) picks[i]=(proofEnabled && docs[2][i])?"2":docs[1][i]?"1":"0";
   const q=document.querySelector("#search").value.trim().toLowerCase();
   const body=document.querySelector("#body"); body.innerHTML="";
@@ -1338,7 +1702,7 @@ function render(){
       <td class="num">${i+1}</td>
       <td><div class="cell" contenteditable="true" data-doc="0" data-row="${i}">${baseHTML(a,ref)}</div></td>
       <td><div class="cell" contenteditable="true" data-doc="1" data-row="${i}">${diffHTML(a,b)}</div></td>
-      <td class="proof-only"><div class="cell" contenteditable="true" data-doc="2" data-row="${i}">${c ? esc(c) : '<span class="empty">비어 있음</span>'}</div></td>
+      <td class="proof-only"><div class="cell" contenteditable="true" data-doc="2" data-row="${i}">${c ? diffHTML(b,c) : '<span class="empty">비어 있음</span>'}</div></td>
       <td class="choose">
         ${(proofEnabled?[0,1,2]:[0,1]).map(k=>`<label><input type="radio" name="p${i}" value="${k}" ${picks[i]==String(k)?"checked":""}> ${["초고","개고","퇴고"][k]}</label>`).join("")}
       </td>`;
@@ -1480,20 +1844,33 @@ async function parseFile(file){
 }
 
 
-function loadManualTextInto(i,text){
+function syncManualTextInto(i,text,{showToast=false}={}){
   const ps=splitOriginalParas(text||"");
   rawDocs[i]=ps;
   sentenceDocs[i]=segmentParas(rawDocs[i],"sentence");
+  rebuildAlignedSentenceDocs();
   fileNames[i]="직접 입력";
-  const mode=document.querySelector("#segmentMode")?.value || "sentence";
+
+  const mode=document.querySelector("#segmentMode")?.value || "original";
   docs[i]=mode==="original" ? [...rawDocs[i]] : [...sentenceDocs[i]];
+
+  // 직접 입력은 원본 자체가 바뀌는 작업이므로 기존 셀 편집 히스토리는 새 기준으로 초기화합니다.
   picks=[];
   undoStack=[];
   redoStack=[];
   lastSnapshot=null;
+
   render();
   resetHistoryBase();
-  toast(ps.length ? `${["초고","개고","퇴고"][i]} 직접 입력을 반영했습니다.` : `${["초고","개고","퇴고"][i]} 내용을 비웠습니다.`);
+  refreshSpellPanelIfOpen();
+
+  if(showToast){
+    toast(ps.length ? `${["초고","개고","퇴고"][i]} 직접 입력을 반영했습니다.` : `${["초고","개고","퇴고"][i]} 내용을 비웠습니다.`);
+  }
+}
+
+function loadManualTextInto(i,text){
+  syncManualTextInto(i,text,{showToast:true});
 }
 
 document.querySelectorAll(".drop").forEach(drop=>{
@@ -1518,9 +1895,20 @@ document.querySelectorAll(".drop").forEach(drop=>{
     loadManualTextInto(i,textarea.value);
   });
 
+  // 입력 중에도 하단 비교 본문을 실시간 갱신합니다.
+  // 짧은 디바운스를 두어 긴 원고에서도 타이핑이 버벅이지 않도록 합니다.
+  let liveTimer=null;
+  textarea?.addEventListener("input",()=>{
+    clearTimeout(liveTimer);
+    liveTimer=setTimeout(()=>{
+      syncManualTextInto(i,textarea.value,{showToast:false});
+    },120);
+  });
+
   textarea?.addEventListener("keydown",e=>{
     if((e.ctrlKey||e.metaKey) && e.key==="Enter"){
       e.preventDefault();
+      clearTimeout(liveTimer);
       loadManualTextInto(i,textarea.value);
     }
   });
@@ -1531,6 +1919,7 @@ async function loadInto(i,file){
     const ps=await parseFile(file);
     rawDocs[i]=ps;
     sentenceDocs[i]=segmentParas(rawDocs[i],"sentence");
+    rebuildAlignedSentenceDocs();
     fileNames[i]=file.name;
     const manualText=document.querySelector(`.drop[data-i="${i}"] .manual-text`);
     if(manualText) manualText.value=ps.join("\n\n");
@@ -1544,11 +1933,32 @@ async function loadInto(i,file){
   }catch(e){ alert(e.message); }
 }
 document.querySelectorAll(".drop").forEach(drop=>{
-  const i=+drop.dataset.i, input=drop.querySelector("input");
-  input.addEventListener("change",()=>input.files[0]&&loadInto(i,input.files[0]));
-  ["dragenter","dragover"].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add("drag")}));
-  ["dragleave","drop"].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove("drag")}));
-  drop.addEventListener("drop",e=>e.dataTransfer.files[0]&&loadInto(i,e.dataTransfer.files[0]));
+  const i=+drop.dataset.i;
+  const input=drop.querySelector(".file-input-hidden");
+  const prompt=drop.querySelector(".file-drop-prompt");
+
+  input?.addEventListener("change",()=>input.files[0]&&loadInto(i,input.files[0]));
+
+  prompt?.addEventListener("click",()=>input?.click());
+  prompt?.addEventListener("keydown",e=>{
+    if(e.key==="Enter" || e.key===" "){
+      e.preventDefault();
+      input?.click();
+    }
+  });
+
+  ["dragenter","dragover"].forEach(ev=>drop.addEventListener(ev,e=>{
+    e.preventDefault();
+    drop.classList.add("drag");
+  }));
+  ["dragleave","drop"].forEach(ev=>drop.addEventListener(ev,e=>{
+    e.preventDefault();
+    drop.classList.remove("drag");
+  }));
+  drop.addEventListener("drop",e=>{
+    const file=e.dataTransfer?.files?.[0];
+    if(file) loadInto(i,file);
+  });
 });
 document.querySelector("#search").addEventListener("input",render);
 
@@ -1617,6 +2027,27 @@ document.querySelector("#displayToggleBtn")?.addEventListener("click",()=>{
 });
 
 
+let floatingToolbarEnabled=true;
+
+function setFloatingToolbar(on){
+  floatingToolbarEnabled=on;
+  document.body.classList.toggle("toolbar-float-off",!on);
+  const btn=document.querySelector("#floatingToggleBtn");
+  if(btn){
+    btn.textContent=on ? "ON" : "OFF";
+    btn.classList.toggle("on",on);
+    btn.classList.toggle("off",!on);
+  }
+}
+
+document.querySelector("#floatingToggleBtn")?.addEventListener("click",()=>{
+  setFloatingToolbar(!floatingToolbarEnabled);
+  toast(floatingToolbarEnabled ? "둥둥 뜹니다!" : "얌전히 내려앉았습니다.");
+});
+setFloatingToolbar(true);
+
+
+
 document.querySelector("#segmentMode").addEventListener("change",()=>{
   applySegmentation();
   resetHistoryBase();
@@ -1640,7 +2071,7 @@ document.querySelector("#clearBtn").onclick=()=>{
 };
 document.querySelector("#demoBtn").addEventListener("click",()=>{
   flashTapPressProof(document.querySelector("#demoBtn"));
-  demoState=(demoState+1)%4;
+  demoState=(demoState+1)%5;
 
   // 항상 기본 상태는 퇴고 ON / 표시 ON으로 맞춥니다.
   setProofEnabled(true);
@@ -1698,49 +2129,70 @@ document.querySelector("#demoBtn").addEventListener("click",()=>{
     toast("첫 번째 예시를 불러왔습니다.");
 
   }else if(demoState===2){
-    // 예시 2: 사용자가 제공한 장면
+    // 예시 2: 대사가 있는 장면 + 세 가지 검사 분류 확인용
     sentenceDocs[0]=[
-      "아오이는 창 밖을 바라본 채 말을 이었다.",
-      "“오늘은 제가 그 앞에 서 있어요.”",
-      "츠바키는 아무 말도 하지 못했다. 심장이 크게 한 번 뛰었다.",
-      "아마도 별다른 뜻은 없을 것이다. 그저 기사가 오늘 밤의 경계 위치를 알려 준 것뿐이고, 침실 앞을 지키는 일도 원래 근위대의 임무였다. 츠바키도 그 사실은 알고 있었다."
+      "아오이가 잠시 침묵했다. 츠바키에게 향해 있던 시선은 머릿속으로 무언가를 재는 듯 하더니 이내 아래로 내리깔렸다. 그녀의 손 끝에 닿는 서류의 모서리를 가지런히 맞추는 동작만이 느리게 이어졌다.",
+      "츠바키는 그 침묵의 성질을 이제 조금 알 것도 같았다. 대꾸할 말이 없을 때 이 사람은 저렇게 조용해진다, 조용해진다, 조용해진다.",
+      "\"그래도 제가 나설 일이 아닙니다.\"",
+      "\"왜?\"",
+      "\"저는 전하의 호위 기사로서 배속되었습니다. 교습은 제 직무가 아닙니다.\"",
+      "\"그럼 직무로 만들면 되잖아.\"",
+      "\"전하......\"",
+      "\"명령하면 할거야?\""
     ];
     sentenceDocs[1]=[
-      "아오이는 시선을 창가에 둔 채 말을 이었다.",
-      "“오늘은 제가 그 앞에 서 있습니다.”",
-      "츠바키는 아무 말도 하지 못했다. 심장이 한 번 크게 울린 뒤 천천히 가라앉았다.",
-      "아마 별다른 뜻은 없는 말일 것이다. 그저 기사가 오늘의 경계 위치를 보고한 것뿐이고, 밤새 침실을 지키는 일 역시 원래 그녀와 근위대의 몫이었다. 츠바키는 그것을 잘 알고 있었다."
+      "아오이가 잠시 침묵했다. 츠바키에게 향해 있던 시선은 머릿속으로 무언가를 재는 듯하더니 이내 아래로 내리깔렸다. 그녀의 손끝에 닿는 서류의 모서리를 가지런히 맞추는 동작만이 느리게 이어졌다.",
+      "츠바키는 그 침묵의 성질을 이제 조금 알 것도 같았다. 대꾸할 말이 없을 때 이 사람은 저렇게 조용해진다. 어쩐지 그런 침묵은 오래 바라볼 만했다.",
+      "\"그래도 제가 나설 일이 아닙니다.\"",
+      "\"왜?\"",
+      "\"저는 전하의 호위 기사로서 배속되었습니다. 교습은 제 직무가 아닙니다.\"",
+      "\"그럼 직무로 만들면 되잖아.\"",
+      "\"전하······.\"",
+      "\"명령하면 할 거야?\""
     ];
     sentenceDocs[2]=[
-      "아오이는 시선을 창에 둔 채 말을 이었다.",
-      "“오늘은 제가 그 앞에 서 있습니다.”",
-      "츠바키는 아무 말도 하지 못했다. 심장이 한 번 크게 울렸다가, 천천히 가라앉았다.",
-      "아마도 별 뜻 없는 말일 것이다. 그저 기사가 오늘의 경계 위치를 보고한 것뿐이고, 밤새 침실을 지키는 일은 원래 그녀와 근위대의 몫이니까. 츠바키는 그것을 아주 잘 알고 있었다."
+      "아오이가 잠시 침묵했다. 츠바키에게 향해 있던 시선은, 머릿속으로 무언가를 재는 듯 하더니 이내 아래로 내리깔렸다. 그녀의 손끝에 닿는 서류의 모서리를 가지런히 맞추는 동작만이 느리게 이어졌다. 츠바키는 그 침묵의 성질을 이제 조금 알 것도 같았다. 대꾸할 말이 없을 때 이 사람은 저렇게 조용해진다.",
+      "\"그래도 제가 나설 일이 아닙니다.\"",
+      "\"왜?\"",
+      "\"저는 전하의 호위 기사로서 배속되었습니다. 교습은 제 직무가 아닙니다.\"",
+      "\"그럼 직무로 만들면 되잖아.\"",
+      "\"전하······.\"",
+      "\"명령하면 할 거야?\""
     ];
 
-    // 원본 단위: 사용자가 붙여넣은 실제 줄바꿈을 그대로 보존
     rawDocs[0]=[
-      "아오이는 창 밖을 바라본 채 말을 이었다.",
-      "“오늘은 제가 그 앞에 서 있어요.”",
-      "츠바키는 아무 말도 하지 못했다. 심장이 크게 한 번 뛰었다.",
-      "아마도 별다른 뜻은 없을 것이다. 그저 기사가 오늘 밤의 경계 위치를 알려 준 것뿐이고, 침실 앞을 지키는 일도 원래 근위대의 임무였다. 츠바키도 그 사실은 알고 있었다."
+      "아오이가 잠시 침묵했다. 츠바키에게 향해 있던 시선은 머릿속으로 무언가를 재는 듯 하더니 이내 아래로 내리깔렸다. 그녀의 손 끝에 닿는 서류의 모서리를 가지런히 맞추는 동작만이 느리게 이어졌다. 츠바키는 그 침묵의 성질을 이제 조금 알 것도 같았다. 대꾸할 말이 없을 때 이 사람은 저렇게 조용해진다, 조용해진다, 조용해진다.",
+      "\"그래도 제가 나설 일이 아닙니다.\"",
+      "\"왜?\"",
+      "\"저는 전하의 호위 기사로서 배속되었습니다. 교습은 제 직무가 아닙니다.\"",
+      "\"그럼 직무로 만들면 되잖아.\"",
+      "\"전하......\"",
+      "\"명령하면 할거야?\""
     ];
     rawDocs[1]=[
-      "아오이는 시선을 창가에 둔 채 말을 이었다.",
-      "“오늘은 제가 그 앞에 서 있습니다.”",
-      "츠바키는 아무 말도 하지 못했다. 심장이 한 번 크게 울린 뒤 천천히 가라앉았다.",
-      "아마 별다른 뜻은 없는 말일 것이다. 그저 기사가 오늘의 경계 위치를 보고한 것뿐이고, 밤새 침실을 지키는 일 역시 원래 그녀와 근위대의 몫이었다. 츠바키는 그것을 잘 알고 있었다."
+      "아오이가 잠시 침묵했다. 츠바키에게 향해 있던 시선은 머릿속으로 무언가를 재는 듯하더니 이내 아래로 내리깔렸다. 그녀의 손끝에 닿는 서류의 모서리를 가지런히 맞추는 동작만이 느리게 이어졌다. 츠바키는 그 침묵의 성질을 이제 조금 알 것도 같았다. 대꾸할 말이 없을 때 이 사람은 저렇게 조용해진다. 어쩐지 그런 침묵은 오래 바라볼 만했다.",
+      "\"그래도 제가 나설 일이 아닙니다.\"",
+      "\"왜?\"",
+      "\"저는 전하의 호위 기사로서 배속되었습니다. 교습은 제 직무가 아닙니다.\"",
+      "\"그럼 직무로 만들면 되잖아.\"",
+      "\"전하······.\"",
+      "\"명령하면 할 거야?\""
     ];
     rawDocs[2]=[
-      "아오이는 시선을 창에 둔 채 말을 이었다.",
-      "“오늘은 제가 그 앞에 서 있습니다.”",
-      "츠바키는 아무 말도 하지 못했다. 심장이 한 번 크게 울렸다가, 천천히 가라앉았다.",
-      "아마도 별 뜻 없는 말일 것이다. 그저 기사가 오늘의 경계 위치를 보고한 것뿐이고, 밤새 침실을 지키는 일은 원래 그녀와 근위대의 몫이니까. 츠바키는 그것을 아주 잘 알고 있었다."
+      "아오이가 잠시 침묵했다. 츠바키에게 향해 있던 시선은, 머릿속으로 무언가를 재는 듯 하더니 이내 아래로 내리깔렸다. 그녀의 손끝에 닿는 서류의 모서리를 가지런히 맞추는 동작만이 느리게 이어졌다. 츠바키는 그 침묵의 성질을 이제 조금 알 것도 같았다. 대꾸할 말이 없을 때 이 사람은 저렇게 조용해진다.",
+      "\"그래도 제가 나설 일이 아닙니다.\"",
+      "\"왜?\"",
+      "\"저는 전하의 호위 기사로서 배속되었습니다. 교습은 제 직무가 아닙니다.\"",
+      "\"그럼 직무로 만들면 되잖아.\"",
+      "\"전하······.\"",
+      "\"명령하면 할 거야?\""
     ];
 
     fileNames[0]="예시 2 초고";
     fileNames[1]="예시 2 개고";
     fileNames[2]="예시 2 퇴고";
+
+    rebuildAlignedSentenceDocs();
 
     const mode=document.querySelector("#segmentMode")?.value || "sentence";
     docs[0]=mode==="original" ? [...rawDocs[0]] : [...sentenceDocs[0]];
@@ -1794,8 +2246,95 @@ document.querySelector("#demoBtn").addEventListener("click",()=>{
     refreshSpellPanelIfOpen();
     toast("세 번째 예시를 불러왔습니다.");
 
+  }else if(demoState===4){
+    // 예시 4: 긴 장문 + 세 가지 검사 분류 확인용
+    sentenceDocs[0]=[
+      "닫히지 않은 문틈으로 가느다란 빛줄기가 새어 나오고 있었다. 아오이는 그쪽을 바라보지 않았다. 대신 복도 끝의 어둠과 창 밖 정원의 그림자를 번갈아 확인했다.",
+      "열걸음 앞의 기둥. 오른편으로 스무걸음 떨어진 계단. 창을 뛰어넘기 위한 동작의 순서와 자신이 검을 뽑는 데 필요한 시간.",
+      "그런 것들을 헤아리는 일은 그녀에게 호흡과 같았다. 아주 익숙했고 아주 자연스러웠고 아주 오래된 습관이었다.",
+      "무서웠다는 것은 사실이었다. 다만 그게 전부는 아니었다. 그날 사원 앞에서 그녀가 정말로 무서웠던 순간은 검이 날아온 순간이 아니라 마차의 문이 닫히기 직전 뒤를 돌아보았을 때였다.",
+      "그 안에는 하얗게 질린 얼굴이 있었다. 그 순간만큼은 황녀가 아닌 평범한 스무 살짜리였다. 아오이는 그 얼굴을 봣다.",
+      "아오이는 그녀를 본 순간 가슴께가 크게 한 번 어긋남을 느꼈고 고동의 정체를 확인하기 전에 서둘러 등을 돌렸다. 혹시라도 다시 생각해보고 싶지 않았다.",
+      "그런 건 묻어두는 편이 낫다. 그런 건 묻어두는 편이 낫다. 그런 건 묻어두는 편이 낫다.",
+      "아오이는 검자루 위에 얹은 손을 살짝 고쳐 잡았다. 자신은 그저 임무를 수행 중인 호위 기사고 문 너머에 있는 사람은 제국의 황녀다.",
+      "입단 이래로 꾸준히 읊어 온 황실 근위 기사의 서약에는 목숨을 다해 지키라는 말만 있을 뿐 마음까지 바쳐야 한다는 내용은 없었다. 기사에게 요구되는 건 충성이지 그 이상의 무언가일 이유는 없기 때문에.",
+      "전속 호위 기사가 담당 황족과 사사로운 정을 나누는 것은 엄격히 금지되어 있었다. 그러한 규율을 어겨 가며 밀담을 나누다가 파멸한 이들의 사연은 기사단에 구전처럼 전해 내려왔다.",
+      "아오이 역시 그런 사례들을 익히 들어 알고 있었다. 그럴법한 이유는 충분했다. 그리고 자신은 그런 이야기의 주인공이 될 생각이 조금도 없었다.",
+      "그러니 이런 순간은 아무 일도 아닌 셈이었다."
+    ];
+    sentenceDocs[1]=[
+      "닫히지 않은 문틈으로 가느다란 빛줄기가 새어 나오고 있었다. 아오이는 그쪽을 바라보지 않았다. 대신 복도 끝의 어둠과 창밖 정원의 그림자를 번갈아 확인했다.",
+      "열 걸음 앞의 기둥. 오른편으로 스무 걸음 떨어진 계단. 창을 뛰어넘기 위한 동작의 순서와 자신이 검을 뽑는 데 필요한 시간.",
+      "그런 것들을 헤아리는 일은 그녀에게 호흡과 같았다. 오래전부터 몸에 밴 습관이라 의식하지 않아도 자연스럽게 이어졌다.",
+      "무서웠다는 것은 사실이었다. 다만 그게 전부는 아니었다. 그날 사원 앞에서 그녀가 정말로 무서웠던 순간은 검이 날아온 순간이 아니라, 마차의 문이 닫히기 직전 뒤를 돌아보았을 때였다.",
+      "그 안에는 하얗게 질린 얼굴이 있었다. 그 순간만큼은 황녀가 아닌 평범한 스무 살짜리였다. 아오이는 그 모습을 보는 순간 잠시 숨을 잊었다.",
+      "가슴께가 크게 한 번 어긋나는 감각이 들었고, 고동의 정체를 확인하기 전에 서둘러 등을 돌렸다. 그 이유를 다시 생각해보는 일은 피하고 싶었다.",
+      "그런 건 묻어두는 편이 낫다.",
+      "아오이는 검자루 위에 얹은 손을 살짝 고쳐 잡았다. 자신은 그저 임무를 수행 중인 호위 기사고, 문 너머에 있는 사람은 제국의 황녀다.",
+      "입단 이래로 꾸준히 읊어 온 황실 근위 기사의 서약에는 목숨을 다해 지키라는 말만 있을 뿐, 마음까지 바쳐야 한다는 내용은 없었다. 기사에게 요구되는 건 충성이지, 그 이상의 무언가일 이유는 없었다.",
+      "전속 호위 기사가 담당 황족과 사사로운 정을 나누는 것은 엄격히 금지되어 있었다. 그러한 규율을 어겨 가며 밀담을 나누다가 파멸한 이들의 사연은 기사단에 구전처럼 전해 내려왔다.",
+      "아오이 역시 그런 사례들을 익히 들어 알고 있었다. 그렇게 될 법한 이유도 충분했다. 그리고 자신은 그런 이야기의 주인공이 될 생각이 조금도 없었다.",
+      "그러니 이런 순간은 아무 일도 아닌 셈이었다."
+    ];
+    sentenceDocs[2]=[
+      "닫히지 않은 문틈으로 가느다란 빛줄기가 새어 나오고 있었다. 아오이는 그쪽을 바라보지 않았다. 대신 복도 끝의 어둠과 창밖 정원의 그림자를 번갈아 확인했다.",
+      "열 걸음 앞의 기둥. 오른편으로 스무 걸음 떨어진 계단. 창을 뛰어넘기 위한 동작의 순서와, 자신이 검을 뽑는 데 필요한 시간.",
+      "그런 것들을 헤아리는 일은 그녀에게 호흡과 같았다.",
+      "무서웠다는 것은 사실이었다. 다만 그게 전부는 아니었다. 그날 사원 앞에서 그녀가 정말로 무서웠던 순간은 검이 날아온 순간이 아니라, 마차의 문이 닫히기 직전 뒤를 돌아보았을 때였다.",
+      "그 안에는 하얗게 질린 얼굴이 있었고, 그 순간만큼은 황녀가 아닌 평범한 스무 살짜리였기에.",
+      "아오이는 그녀를 본 순간 가슴께가 크게 한 번 어긋남을 느꼈고, 고동의 정체를 확인하기 전에 서둘러 등을 돌렸다.",
+      "그런 건 묻어두는 편이 낫다.",
+      "아오이는 검자루 위에 얹은 손을 살짝 고쳐 잡았다. 자신은 그저 임무를 수행 중인 호위 기사고, 문 너머에 있는 사람은 제국의 황녀다.",
+      "입단 이래로 꾸준히 읊어 온 황실 근위 기사의 서약에는 목숨을 다해 지키라는 말만 있을 뿐, 마음까지 바쳐야 한다는 내용은 없었다. 기사에게 요구되는 건 충성이지, 그 이상의 무언가일 이유는 없기 때문에.",
+      "전속 호위 기사가 담당 황족과 사사로운 정을 나누는 것은 엄격히 금지되어 있었다. 그러한 규율을 어겨 가며 밀담을 나누다가 파멸한 이들의 사연은 기사단에 구전처럼 전해 내려왔다.",
+      "아오이 역시 그런 사례들을 익히 들어 알고 있었다. 그리고 자신은 그런 이야기의 주인공이 될 생각이 조금도 없었다.",
+      "그러니 이런 순간은 아무 일도 아닌 셈이었다."
+    ];
+
+    rawDocs[0]=[
+      sentenceDocs[0][0],
+      sentenceDocs[0][1]+" "+sentenceDocs[0][2],
+      sentenceDocs[0][3]+" "+sentenceDocs[0][4]+" "+sentenceDocs[0][5],
+      sentenceDocs[0][6],
+      sentenceDocs[0][7]+" "+sentenceDocs[0][8],
+      sentenceDocs[0][9]+" "+sentenceDocs[0][10],
+      sentenceDocs[0][11]
+    ];
+    rawDocs[1]=[
+      sentenceDocs[1][0],
+      sentenceDocs[1][1]+" "+sentenceDocs[1][2],
+      sentenceDocs[1][3]+" "+sentenceDocs[1][4]+" "+sentenceDocs[1][5],
+      sentenceDocs[1][6],
+      sentenceDocs[1][7]+" "+sentenceDocs[1][8],
+      sentenceDocs[1][9]+" "+sentenceDocs[1][10],
+      sentenceDocs[1][11]
+    ];
+    rawDocs[2]=[
+      sentenceDocs[2][0],
+      sentenceDocs[2][1]+" "+sentenceDocs[2][2],
+      sentenceDocs[2][3]+" "+sentenceDocs[2][4]+" "+sentenceDocs[2][5],
+      sentenceDocs[2][6],
+      sentenceDocs[2][7]+" "+sentenceDocs[2][8],
+      sentenceDocs[2][9]+" "+sentenceDocs[2][10],
+      sentenceDocs[2][11]
+    ];
+
+    fileNames[0]="예시 4 초고";
+    fileNames[1]="예시 4 개고";
+    fileNames[2]="예시 4 퇴고";
+
+    const mode=document.querySelector("#segmentMode")?.value || "sentence";
+    docs[0]=mode==="original" ? [...rawDocs[0]] : [...sentenceDocs[0]];
+    docs[1]=mode==="original" ? [...rawDocs[1]] : [...sentenceDocs[1]];
+    docs[2]=mode==="original" ? [...rawDocs[2]] : [...sentenceDocs[2]];
+    picks=Array(Math.max(...docs.map(x=>x.length))).fill("2");
+    render();
+    resetHistoryBase();
+    refreshSpellPanelIfOpen();
+    toast("마지막 예시를 불러왔습니다.");
+
   }else{
-    // 네 번째 클릭: 예시 제거 + 공란 초기 상태
+    // 다섯 번째 클릭: 예시 제거 + 공란 초기 상태
     for(let i=0;i<3;i++){
       docs[i]=[];
       rawDocs[i]=[];
@@ -1848,12 +2387,21 @@ let lastSelectedText="";
 function updateLastSelectedText(){
   const sel=window.getSelection();
   const txt=sel ? sel.toString().trim() : "";
-  if(txt){
-    const anchor=sel.anchorNode?.parentElement?.closest?.(".cell") || sel.anchorNode?.parentElement;
-    const focus=sel.focusNode?.parentElement?.closest?.(".cell") || sel.focusNode?.parentElement;
-    if((anchor && anchor.closest?.(".cell")) || (focus && focus.closest?.(".cell"))){
-      lastSelectedText=txt;
-    }
+  if(!txt) return;
+
+  const anchor=sel.anchorNode?.parentElement?.closest?.(".cell") || sel.anchorNode?.parentElement;
+  const focus=sel.focusNode?.parentElement?.closest?.(".cell") || sel.focusNode?.parentElement;
+  const insideCell=(anchor && anchor.closest?.(".cell")) || (focus && focus.closest?.(".cell"));
+  if(!insideCell) return;
+
+  const changed=txt!==lastSelectedText;
+  lastSelectedText=txt;
+
+  // 유의어 패널이 이미 열려 있으면 새로 드래그한 단어를 즉시 반영합니다.
+  // 다시 버튼을 껐다 켤 필요가 없습니다.
+  const panel=document.querySelector("#synPanel");
+  if(changed && panel?.classList.contains("open")){
+    requestAnimationFrame(showSynonyms);
   }
 }
 
@@ -2337,6 +2885,486 @@ Object.assign(synonymDict,{
   "재차":["다시","거듭","또 한 번","반복해서"]
 });
 
+
+/* 네 가지 예시 원고에서 추출해 보강한 소설용 유의어 */
+Object.assign(synonymDict,{
+  "문틈":["문 사이","벌어진 틈","반쯤 열린 틈","문짝 사이의 틈"],
+  "빛줄기":["한 줄기 빛","광선","희미한 빛","가느다란 빛","새어 드는 빛"],
+  "새어나오다":["스며 나오다","비쳐 나오다","흘러나오다","번져 나오다","틈으로 나오다"],
+  "복도":["회랑","통로","긴 복도","궁의 회랑"],
+  "어둠":["암흑","어스름","그늘","검은 기색","빛이 닿지 않는 곳"],
+  "그림자":["음영","그늘","실루엣","검은 윤곽","드리운 형상"],
+  "번갈아":["교대로","차례로","번갈아 가며","이쪽저쪽으로"],
+  "확인하다":["살피다","점검하다","확인해 보다","눈으로 짚다","재차 보다"],
+  "기둥":["주기둥","석주","기둥줄","지주"],
+  "계단":["층계","돌계단","층층이 난 길","계단참"],
+  "뛰어넘다":["넘어가다","도약하다","훌쩍 넘다","몸을 날려 넘다"],
+  "동작":["움직임","몸짓","행동","동세","움직이는 순서"],
+  "순서":["차례","절차","수순","단계","일련의 흐름"],
+  "검을뽑다":["발검하다","칼을 빼다","검집에서 검을 빼내다","칼날을 드러내다"],
+  "헤아리다":["가늠하다","계산하다","짐작하다","따져 보다","재어 보다"],
+  "호흡":["숨","숨결","들숨과 날숨","숨의 리듬"],
+  "무섭다":["두렵다","겁나다","공포스럽다","서늘하다","두려움을 느끼다"],
+  "사원":["신전","성소","예배당","제단이 있는 곳"],
+  "마차":["수레","마차 안","황실 마차","사륜마차"],
+  "질리다":["창백해지다","핏기가 가시다","하얗게 되다","안색이 굳다"],
+  "평범하다":["보통이다","일상적이다","범상하다","특별할 것 없다","여느 사람과 같다"],
+  "고동":["심장박동","맥박","두근거림","심장의 울림","가슴의 박동"],
+  "정체":["본질","실체","정체성","무엇인지","근원"],
+  "등을돌리다":["돌아서다","몸을 돌리다","뒤돌아서다","시선을 끊다","상대에게 등을 보이다"],
+  "묻어두다":["감추다","덮어두다","마음속에 넣어 두다","외면하다","꺼내지 않다"],
+  "검자루":["칼자루","손잡이","검의 손잡이","힐트"],
+  "고쳐잡다":["다시 잡다","쥐는 법을 바로잡다","손의 위치를 바꾸다","쥔 손을 정돈하다"],
+  "수행하다":["이행하다","행하다","맡은 일을 하다","임무를 완수하다"],
+  "호위":["경호","보호","호송","곁을 지킴","신변 보호"],
+  "황녀":["제국의 공주","황실의 딸","황제의 딸","황족 여성"],
+  "읊다":["낭송하다","외우다","되뇌다","소리 내어 읽다"],
+  "서약":["맹세","선서","서언","약속","충성의 맹세"],
+  "지키다":["보호하다","수호하다","막아서다","곁을 지키다","안전하게 두다"],
+  "바치다":["헌신하다","내어 주다","헌납하다","쏟다","기꺼이 내놓다"],
+  "충성":["충의","헌신","복종","충심","충직함"],
+  "사사롭다":["개인적이다","사적이다","개인적인 정에 얽히다","공적이지 않다"],
+  "엄격하다":["엄하다","엄정하다","철저하다","까다롭다","빈틈없다"],
+  "규율":["규정","규칙","기율","법도","기사단의 원칙"],
+  "밀담":["은밀한 대화","비밀스러운 이야기","내밀한 대화","남몰래 나누는 말"],
+  "파멸":["몰락","파국","붕괴","멸망","돌이킬 수 없는 끝"],
+  "구전":["입에서 입으로 전함","전승","구술 전승","이야기로 전해짐"],
+  "사례":["예","전례","선례","경우","실제 사례"],
+  "주인공":["당사자","중심인물","이야기의 중심","사건의 당사자"],
+  "순간":["찰나","한순간","일순","잠깐","짧은 때"],
+
+  "침묵":["정적","말없음","묵묵함","입을 다문 상태","대답 없는 시간"],
+  "재다":["가늠하다","헤아리다","따져 보다","계산하다","속으로 견주다"],
+  "내리깔다":["내리뜨다","시선을 낮추다","눈길을 내리다","눈을 아래로 두다"],
+  "서류":["문서","서면","기록물","서류철","종이 문건"],
+  "모서리":["귀퉁이","끝부분","가장자리","각진 끝"],
+  "가지런히":["반듯하게","정갈하게","고르게","나란히","흐트러짐 없이"],
+  "느리게":["천천히","더디게","완만하게","느릿하게","서두르지 않고"],
+  "성질":["성격","특성","속성","기질","결"],
+  "대꾸":["대답","응수","답변","말을 받음","맞대응"],
+  "배속되다":["배치되다","소속되다","부임하다","지정되다","배정되다"],
+  "교습":["수업","교육","지도","가르침","훈련"],
+  "직무":["임무","소임","업무","책무","맡은 일"],
+  "명령":["지시","분부","명","지령","명령 사항"],
+
+  "승마":["기마","말타기","기승","말을 모는 법"],
+  "검술":["검법","검기","칼 쓰는 법","검을 다루는 기술"],
+  "교양":["소양","교육","기본 소양","품위에 필요한 지식"],
+  "고삐":["말고삐","재갈끈","말의 고삐","말을 제어하는 끈"],
+  "자세":["태세","자태","폼","몸가짐","자세의 틀"],
+  "사범":["스승","교관","지도자","검술 교관"],
+  "보호":["수호","보살핌","방호","지킴","안전 확보"],
+  "선택지":["선택","가능성","갈림길","고를 수 있는 길","대안"],
+
+  "찻잔":["차잔","잔","차를 담은 잔","찻물 잔"],
+  "눈치":["기색","낌새","분위기 파악","상대의 반응","눈치챔"],
+  "시선을거두다":["눈길을 돌리다","시선을 피하다","고개를 돌리다","더는 바라보지 않다"],
+  "모욕":["수모","치욕","모멸","굴욕","모욕적인 말"],
+  "부담스럽다":["버겁다","거북하다","마음에 짐이 되다","불편하다","무겁게 느껴지다"],
+  "당사자":["본인","해당 인물","장본인","그 일의 중심인물"],
+  "식다":["차가워지다","온기가 가시다","열이 내리다","미지근해지다","열기가 사라지다"],
+  "정원":["뜰","후원","궁정의 뜰","정원 안","화원"]
+});
+
+
+/* 소설 퇴고용 유의어 대폭 보강 */
+Object.assign(synonymDict,{
+  "오래":["오랫동안","오래도록","한동안","긴 시간","장시간","오래오래","세월이 흐르도록"],
+  "오랫동안":["오래","오래도록","한동안","긴 시간 동안","장기간","줄곧"],
+  "오래도록":["오랫동안","오래","긴 시간 동안","한참 동안","세월이 지나도록"],
+  "잠시":["잠깐","잠시간","잠시 동안","한동안","잠깐 동안","문득 멈춘 듯"],
+  "한동안":["얼마간","한참","잠시 동안","오랫동안","한동안 내내"],
+  "한참":["오랫동안","한동안","꽤 오래","한참 동안","잠시보다 길게"],
+  "곧":["이내","머지않아","금세","곧바로","바로","잠시 뒤"],
+  "이내":["곧","곧바로","머지않아","잠시 뒤","금세"],
+  "금세":["곧","이내","순식간에","어느새","금방"],
+  "갑자기":["문득","불현듯","느닷없이","돌연","별안간","순간적으로"],
+  "불현듯":["문득","갑자기","느닷없이","돌연","예고 없이"],
+  "느닷없이":["갑자기","돌연","별안간","불쑥","예고 없이"],
+  "서서히":["천천히","차츰","조금씩","점차","느리게","완만하게"],
+  "차츰":["점차","서서히","조금씩","차차","점점"],
+  "점차":["차츰","서서히","점점","조금씩","시간이 흐르며"],
+  "점점":["갈수록","차츰","점차","서서히","더욱"],
+  "계속":["줄곧","내내","끊임없이","연이어","계속해서","지속해서"],
+  "계속해서":["계속","줄곧","거듭","잇달아","연이어"],
+  "끊임없이":["계속","쉬지 않고","쉼 없이","줄곧","잇달아"],
+  "다시":["재차","거듭","또다시","새삼","다시금"],
+  "또다시":["다시","재차","거듭","다시금","한 번 더"],
+  "새삼":["다시금","문득 다시","이제 와서","새롭게","새삼스럽게"],
+  "아직":["여전히","아직도","미처","여태","여태껏"],
+  "여전히":["변함없이","아직도","그대로","한결같이","예전처럼"],
+  "끝내":["결국","마침내","끝끝내","기어이","마지막에는"],
+  "마침내":["끝내","결국","드디어","종국에는","끝끝내"],
+  "결국":["끝내","마침내","종국에는","결론적으로","마지막에는"],
+  "겨우":["간신히","가까스로","어렵사리","고작","겨우겨우"],
+  "간신히":["겨우","가까스로","어렵사리","힘겹게","아슬아슬하게"],
+  "가까스로":["간신히","겨우","어렵게","힘겹게","아슬아슬하게"],
+
+  "아무렇지않다":["태연하다","덤덤하다","평온한 척하다","내색하지 않다","동요하지 않다"],
+  "무덤덤하다":["덤덤하다","무심하다","태연하다","심드렁하다","감정의 기복이 없다"],
+  "덤덤하다":["담담하다","태연하다","무심하다","평온하다","감정을 드러내지 않다"],
+  "침착하다":["차분하다","태연하다","냉정하다","평정하다","동요하지 않다"],
+  "차분하다":["침착하다","고요하다","잔잔하다","평온하다","가라앉다"],
+  "평온하다":["고요하다","차분하다","평안하다","잔잔하다","안정되다"],
+  "불안하다":["초조하다","조마조마하다","마음이 놓이지 않다","안절부절못하다","긴장되다"],
+  "두렵다":["무섭다","겁나다","겁먹다","공포를 느끼다","서늘해지다"],
+  "겁나다":["두렵다","무섭다","겁먹다","공포스럽다","마음이 움츠러들다"],
+  "당혹스럽다":["당황스럽다","난처하다","어리둥절하다","갈피를 못 잡다","얼떨떨하다"],
+  "난처하다":["곤란하다","당혹스럽다","어색하다","곤혹스럽다","처지가 어렵다"],
+  "곤란하다":["난처하다","곤혹스럽다","어렵다","처리하기 힘들다","난감하다"],
+  "난감하다":["곤란하다","난처하다","막막하다","어찌할 바를 모르다","곤혹스럽다"],
+  "어색하다":["서먹하다","부자연스럽다","낯설다","거북하다","어딘가 맞지 않다"],
+  "서먹하다":["어색하다","데면데면하다","낯설다","거리감이 있다","친숙하지 않다"],
+  "민망하다":["겸연쩍다","쑥스럽다","부끄럽다","난처하다","낯이 뜨겁다"],
+  "쑥스럽다":["부끄럽다","겸연쩍다","민망하다","수줍다","낯간지럽다"],
+  "부끄럽다":["수줍다","민망하다","쑥스럽다","낯이 뜨겁다","창피하다"],
+  "수줍다":["부끄러워하다","쑥스러워하다","내성적이다","낯을 가리다","조심스럽다"],
+  "서운하다":["섭섭하다","아쉽다","마음이 상하다","허전하다","야속하다"],
+  "아쉽다":["서운하다","섭섭하다","미련이 남다","안타깝다","못내 마음에 걸리다"],
+  "안타깝다":["애석하다","아쉽다","가슴 아프다","딱하다","애처롭다"],
+  "애처롭다":["가엾다","딱하다","안쓰럽다","처연하다","마음이 쓰이다"],
+  "안쓰럽다":["애처롭다","딱하다","마음이 쓰이다","가엾다","애잔하다"],
+  "그립다":["보고 싶다","사무치다","그리워하다","애틋하게 떠올리다","마음이 향하다"],
+  "외롭다":["쓸쓸하다","고독하다","적적하다","허전하다","홀로인 듯하다"],
+  "고독하다":["외롭다","쓸쓸하다","고립되다","적막하다","홀로 남다"],
+  "허무하다":["공허하다","덧없다","허탈하다","맥이 빠지다","무상하다"],
+  "덧없다":["허무하다","무상하다","속절없다","허망하다","한때뿐이다"],
+  "기대되다":["설레다","고대하다","마음이 들뜨다","기다려지다","바라게 되다"],
+  "기대":["바람","희망","고대","기대감","마음속 바람"],
+  "희망":["바람","소망","기대","염원","희구"],
+  "간절하다":["절실하다","절절하다","애타다","사무치다","몹시 바라다"],
+
+  "바라보다":["응시하다","주시하다","지켜보다","살피다","눈길을 두다","시선을 보내다","눈에 담다","가만히 보다"],
+  "쳐다보다":["올려다보다","바라보다","응시하다","시선을 들다","눈길을 치켜들다"],
+  "곁눈질하다":["힐끗 보다","흘겨보다","슬쩍 보다","옆눈으로 보다","곁눈으로 살피다"],
+  "응시하다":["주시하다","바라보다","시선을 고정하다","눈을 떼지 않다","가만히 들여다보다"],
+  "살피다":["둘러보다","확인하다","눈여겨보다","주시하다","주의 깊게 보다","훑다"],
+  "훑다":["훑어보다","일별하다","빠르게 살피다","시선을 훑다","대강 보다"],
+  "지켜보다":["주시하다","관찰하다","바라보다","눈여겨보다","곁에서 보다"],
+  "관찰하다":["살피다","지켜보다","주시하다","눈여겨보다","세심히 보다"],
+  "눈길":["시선","눈","시야","눈빛","바라보는 방향"],
+  "시야":["눈앞","보이는 범위","시선의 범위","시계","눈에 들어오는 범위"],
+  "눈앞":["바로 앞","시야","눈에 보이는 곳","면전","앞"],
+  "눈을피하다":["시선을 피하다","고개를 돌리다","눈길을 거두다","바라보지 않다","시선을 비키다"],
+  "시선을피하다":["눈길을 돌리다","고개를 돌리다","바라보지 않다","시선을 거두다","눈을 피하다"],
+  "시선을내리다":["눈길을 낮추다","고개를 숙이다","눈을 내리깔다","아래를 보다","시선을 떨구다"],
+  "눈을들다":["시선을 올리다","고개를 들다","올려다보다","눈길을 들다","시선을 치켜들다"],
+
+  "웃다":["미소 짓다","빙긋 웃다","싱긋 웃다","웃음을 터뜨리다","웃음을 흘리다","입꼬리를 올리다"],
+  "미소짓다":["웃다","빙긋 웃다","입꼬리를 올리다","옅게 웃다","미소를 띠다"],
+  "빙긋웃다":["미소 짓다","살짝 웃다","입꼬리를 올리다","희미하게 웃다"],
+  "싱긋웃다":["밝게 웃다","미소 짓다","입가에 웃음을 띠다","상냥하게 웃다"],
+  "울먹이다":["목이 메다","눈물이 맺히다","금방이라도 울 듯하다","흐느낌을 삼키다"],
+  "흐느끼다":["울다","오열하다","울먹이다","숨죽여 울다","가느다랗게 울다"],
+  "눈물":["눈물방울","눈물기","젖은 눈가","눈시울","울음"],
+  "눈시울":["눈가","눈언저리","눈물 어린 눈","눈물기","붉어진 눈가"],
+  "붉어지다":["상기되다","달아오르다","붉게 물들다","홍조가 돌다","빨개지다"],
+  "창백하다":["하얗게 질리다","핏기가 없다","안색이 희다","혈색이 가시다","파리하다"],
+  "달아오르다":["뜨거워지다","붉어지다","열이 오르다","상기되다","화끈거리다"],
+
+  "말하다":["이야기하다","입을 열다","대답하다","전하다","덧붙이다","내뱉다","말을 건네다","말을 잇다"],
+  "대답하다":["응답하다","답하다","말을 돌려주다","입을 열다","짧게 답하다","대꾸하다"],
+  "묻다":["질문하다","되묻다","물음을 던지다","캐묻다","조심스레 묻다"],
+  "되묻다":["반문하다","다시 묻다","확인하다","되짚어 묻다","의아해하며 묻다"],
+  "속삭이다":["귓속말하다","나직이 말하다","소곤거리다","낮게 말하다","작게 속삭이다"],
+  "중얼거리다":["웅얼거리다","혼잣말하다","나직이 말하다","되뇌다","작게 읊조리다"],
+  "외치다":["소리치다","고함치다","목소리를 높이다","부르짖다","크게 말하다"],
+  "소리치다":["외치다","고함치다","목청을 높이다","버럭 말하다","큰 소리로 부르다"],
+  "말을잇다":["계속 말하다","덧붙이다","이야기를 이어가다","다시 입을 열다","말을 계속하다"],
+  "입을열다":["말을 시작하다","대답하다","말을 꺼내다","침묵을 깨다","입을 떼다"],
+  "입을다물다":["침묵하다","말을 멈추다","입을 닫다","더 말하지 않다","말을 삼키다"],
+  "말을삼키다":["입을 다물다","대답을 멈추다","할 말을 접다","목구멍으로 말을 삼키다","침묵하다"],
+  "말문이막히다":["아무 말도 못 하다","말을 잃다","대답하지 못하다","입이 떨어지지 않다","침묵하다"],
+  "말을잃다":["말문이 막히다","아무 말도 못 하다","침묵하다","대답을 잊다","입을 다물다"],
+  "목소리":["음성","말소리","음색","목소리의 결","목청"],
+  "나직하다":["낮다","잔잔하다","조용하다","낮게 가라앉다","소리가 크지 않다"],
+  "떨리는목소리":["흔들리는 음성","가느다란 목소리","떨림이 밴 말소리","불안정한 음성"],
+
+  "걷다":["거닐다","발걸음을 옮기다","나아가다","걸음을 떼다","천천히 이동하다","걸음을 재촉하다"],
+  "달리다":["뛰다","질주하다","내달리다","달음박질하다","급히 나아가다"],
+  "다가가다":["접근하다","다가서다","곁으로 가다","거리를 좁히다","걸음을 옮기다"],
+  "다가서다":["다가가다","접근하다","곁으로 움직이다","거리를 좁히다","한 걸음 다가가다"],
+  "물러나다":["물러서다","뒤로 가다","거리를 벌리다","자리를 비키다","한발 물러나다"],
+  "멈추다":["멎다","정지하다","걸음을 멈추다","동작을 멈추다","그 자리에 서다"],
+  "멈칫하다":["주춤하다","움찔하다","잠시 멈추다","동작이 끊기다","한순간 굳다"],
+  "주저하다":["망설이다","머뭇거리다","선뜻 나서지 못하다","결정을 미루다","주춤하다"],
+  "머뭇거리다":["망설이다","주저하다","주춤하다","쉽게 움직이지 못하다","결정을 미루다"],
+  "서두르다":["재촉하다","급히 움직이다","걸음을 재촉하다","빠르게 움직이다","성급히 나아가다"],
+  "뒤돌아보다":["돌아보다","고개를 돌리다","뒤를 보다","어깨너머로 보다","뒤쪽을 확인하다"],
+
+  "잡다":["쥐다","붙잡다","움켜쥐다","붙들다","거머쥐다","손에 넣다"],
+  "쥐다":["잡다","움켜쥐다","붙들다","손에 힘을 주다","손아귀에 넣다"],
+  "붙들다":["붙잡다","잡다","움켜쥐다","놓지 않다","손으로 붙잡다"],
+  "놓다":["내려놓다","손을 떼다","풀어 주다","놓아주다","손에서 벗어나게 하다"],
+  "내려놓다":["놓다","탁자에 두다","손에서 떼다","힘을 풀어 두다","자리에 내려두다"],
+  "들다":["들어 올리다","집어 들다","손에 쥐다","치켜들다","들어 보이다"],
+  "집어들다":["들다","손에 쥐다","들어 올리다","집어 올리다","손을 뻗어 들다"],
+  "손을뻗다":["팔을 내밀다","손을 내밀다","손길을 보내다","손끝을 가까이 하다","손을 가져가다"],
+  "만지다":["어루만지다","쓰다듬다","손을 대다","건드리다","손끝으로 느끼다"],
+  "쓰다듬다":["어루만지다","쓸어내리다","다독이다","부드럽게 만지다","손길을 주다"],
+  "감싸다":["두르다","에워싸다","덮다","품다","보호하듯 감싸다"],
+  "안다":["껴안다","품에 안다","끌어안다","포옹하다","품다"],
+  "껴안다":["끌어안다","품에 안다","감싸 안다","포옹하다","팔로 감싸다"],
+  "기대다":["몸을 맡기다","의지하다","비스듬히 대다","몸을 기울이다","기댄 채 서다"],
+
+  "숨":["호흡","숨결","숨소리","들숨과 날숨","가느다란 숨"],
+  "숨을쉬다":["호흡하다","숨을 고르다","숨을 들이쉬다","숨을 내쉬다","호흡을 이어가다"],
+  "숨을고르다":["호흡을 정돈하다","숨을 가다듬다","잠시 호흡하다","들이쉰 숨을 가라앉히다"],
+  "숨을삼키다":["숨을 멈추다","들숨을 삼키다","숨이 막히다","숨을 죽이다","호흡이 끊기다"],
+  "숨을죽이다":["호흡을 낮추다","숨소리를 죽이다","조용히 숨 쉬다","기척을 감추다","숨을 참다"],
+  "심장":["가슴","심장박동","고동","맥박","가슴속"],
+  "심장이뛰다":["가슴이 뛰다","고동치다","심장이 울리다","맥박이 빨라지다","가슴이 두근거리다"],
+  "두근거리다":["심장이 뛰다","가슴이 울리다","고동치다","설레다","맥박이 빨라지다"],
+  "떨다":["떨리다","몸을 떨다","파르르 떨다","진동하다","가늘게 흔들리다"],
+  "흔들리다":["떨리다","요동치다","일렁이다","미세하게 움직이다","흔들림이 번지다"],
+  "굳다":["경직되다","몸이 굳다","얼어붙다","움직임이 멎다","딱딱해지다"],
+
+  "정적":["고요","침묵","적막","정숙","소리가 끊긴 상태"],
+  "고요":["정적","적막","잔잔함","잠잠함","소리 없는 상태"],
+  "적막":["정적","고요","쓸쓸한 침묵","소리 없는 공기","적요"],
+  "소리":["음성","울림","기척","소릿결","소음"],
+  "기척":["움직임","소리","낌새","존재감","기미"],
+  "공기":["분위기","기류","공간의 느낌","주변의 기운","공기의 결"],
+  "분위기":["기류","공기","기운","정조","주변의 느낌"],
+  "기류":["분위기","공기","흐름","미묘한 변화","주변의 기운"],
+  "기운":["기색","분위기","기류","힘","기미"],
+  "기색":["낯빛","표정","기미","기운","내색"],
+  "낌새":["기척","기미","조짐","분위기","눈치챌 만한 흔적"],
+  "조짐":["징후","기미","낌새","전조","예고"],
+
+  "빛":["광채","빛줄기","광선","밝음","희미한 빛"],
+  "어둡다":["컴컴하다","캄캄하다","어슴푸레하다","빛이 적다","그늘지다"],
+  "밝다":["환하다","눈부시다","밝게 빛나다","명랑하다","빛이 충분하다"],
+  "희미하다":["흐릿하다","아스라하다","옅다","미약하다","가물가물하다"],
+  "선명하다":["뚜렷하다","또렷하다","명료하다","생생하다","분명하다"],
+  "흐릿하다":["희미하다","뿌옇다","어렴풋하다","선명하지 않다","가물거리다"],
+  "어렴풋하다":["희미하다","흐릿하다","가물가물하다","분명하지 않다","아스라하다"],
+  "반짝이다":["빛나다","번뜩이다","반짝반짝하다","광채를 내다","빛을 튕기다"],
+  "번뜩이다":["반짝이다","빛나다","번쩍이다","순간 빛을 내다","날카롭게 빛나다"],
+  "드리우다":["내리다","덮이다","그늘지게 하다","길게 뻗다","그림자를 만들다"],
+  "번지다":["퍼지다","스미다","퍼져 나가다","물들다","점차 넓어지다"],
+  "스미다":["배어들다","번지다","깃들다","젖어 들다","파고들다"],
+  "배어들다":["스미다","깃들다","젖어 들다","퍼지다","서서히 들어가다"],
+
+  "차갑다":["서늘하다","냉랭하다","싸늘하다","차디차다","냉담하다"],
+  "서늘하다":["차갑다","싸늘하다","선선하다","오싹하다","냉기가 돌다"],
+  "따뜻하다":["포근하다","온화하다","훈훈하다","온기가 있다","다정하다"],
+  "포근하다":["따뜻하다","아늑하다","부드럽다","온화하다","편안하다"],
+  "뜨겁다":["열겁다","달아오르다","화끈거리다","열이 나다","작열하다"],
+  "부드럽다":["온화하다","유연하다","매끄럽다","잔잔하다","사근사근하다"],
+  "거칠다":["투박하다","매섭다","까칠하다","험하다","부드럽지 않다"],
+  "단단하다":["견고하다","굳세다","야무지다","탄탄하다","쉽게 무너지지 않다"],
+  "가늘다":["얇다","섬세하다","가는 편이다","여리다","실처럼 가늘다"],
+  "굵다":["두껍다","굵직하다","굵은 편이다","도드라지다"],
+
+  "빠르다":["재빠르다","신속하다","민첩하다","날래다","속도가 빠르다"],
+  "느리다":["더디다","완만하다","느릿하다","굼뜨다","서서히 움직이다"],
+  "조심스럽다":["신중하다","신중스럽다","살피며 하다","주저하다","조심스레 움직이다"],
+  "신중하다":["조심스럽다","사려 깊다","慎重하다","서두르지 않다","주의 깊다"],
+  "과감하다":["대담하다","결단력 있다","주저하지 않다","단호하다","거침없다"],
+  "단호하다":["확고하다","엄정하다","매몰차다","결연하다","흔들림 없다"],
+  "확고하다":["굳건하다","분명하다","단호하다","확실하다","흔들리지 않다"],
+
+  "예쁘다":["아름답다","곱다","단아하다","사랑스럽다","보기 좋다"],
+  "아름답다":["곱다","수려하다","단아하다","우아하다","눈부시다","기품 있다"],
+  "곱다":["아름답다","예쁘다","단아하다","섬세하다","정갈하다"],
+  "수려하다":["아름답다","빼어나다","우아하다","단정하다","곱다"],
+  "우아하다":["기품 있다","고상하다","단아하다","품위 있다","아름답다"],
+  "단아하다":["정갈하다","기품 있다","수수하면서 아름답다","얌전하다","반듯하다"],
+  "멋지다":["근사하다","훌륭하다","멋있다","인상적이다","보기 좋다"],
+
+  "이상하다":["기묘하다","묘하다","낯설다","수상하다","기이하다","어색하다"],
+  "묘하다":["기묘하다","이상하다","미묘하다","알 수 없다","설명하기 어렵다"],
+  "미묘하다":["섬세하다","묘하다","애매하다","복잡하다","말로 하기 어렵다"],
+  "낯설다":["생경하다","익숙지 않다","이질적이다","어색하다","생소하다"],
+  "익숙하다":["낯익다","친숙하다","몸에 배다","자연스럽다","익숙해지다"],
+  "익숙해지다":["몸에 배다","낯익어지다","친숙해지다","자연스러워지다","적응하다"],
+  "자연스럽다":["부드럽다","익숙하다","억지스럽지 않다","매끄럽다","티 나지 않다"],
+  "부자연스럽다":["어색하다","억지스럽다","매끄럽지 않다","딱딱하다","자연스럽지 않다"],
+
+  "크다":["커다랗다","거대하다","웅장하다","막대하다","두드러지다"],
+  "작다":["자그맣다","조그맣다","왜소하다","미미하다","아담하다"],
+  "넓다":["광활하다","드넓다","널찍하다","광대하다","너르다"],
+  "좁다":["비좁다","협소하다","좁다랗다","폭이 작다","답답할 만큼 좁다"],
+  "높다":["우뚝하다","높직하다","고도가 높다","치솟다","상승하다"],
+  "낮다":["나지막하다","낮게 깔리다","고도가 낮다","낮직하다","내려앉다"],
+  "깊다":["심오하다","깊숙하다","짙다","농밀하다","깊이가 크다"],
+  "얕다":["옅다","표면적이다","깊지 않다","가볍다","얕막하다"],
+
+  "많다":["수두룩하다","풍부하다","적지 않다","넘쳐나다","다수다"],
+  "적다":["드물다","소수다","많지 않다","미미하다","손에 꼽히다"],
+  "없다":["부재하다","사라지다","전무하다","남아 있지 않다","자취가 없다"],
+  "남다":["머물다","잔존하다","이어지다","남겨지다","흔적이 남다"],
+  "사라지다":["없어지다","지워지다","스러지다","자취를 감추다","희미해지다"],
+  "생기다":["생겨나다","발생하다","나타나다","자리 잡다","싹트다"],
+  "나타나다":["드러나다","보이다","출현하다","생겨나다","모습을 보이다"],
+  "드러나다":["나타나다","밝혀지다","보이다","표면에 나타나다","감춰지지 않다"],
+
+  "기억하다":["떠올리다","상기하다","잊지 않다","기억해 두다","되새기다"],
+  "떠올리다":["상기하다","생각해 내다","되새기다","머릿속에 그리다","기억해 내다"],
+  "되새기다":["곱씹다","상기하다","다시 생각하다","되짚다","마음속으로 반복하다"],
+  "곱씹다":["되새기다","깊이 생각하다","반복해 생각하다","음미하다","마음속에서 굴리다"],
+  "잊다":["망각하다","기억에서 지우다","잊어버리다","마음에서 놓다","떠올리지 않다"],
+  "생각하다":["떠올리다","여기다","고려하다","사유하다","헤아리다","되짚다"],
+  "고민하다":["생각하다","숙고하다","고심하다","고려하다","머리를 싸매다"],
+  "고심하다":["깊이 고민하다","숙고하다","머리를 짜내다","심사숙고하다","고민하다"],
+  "짐작하다":["추측하다","가늠하다","헤아리다","어림잡다","눈치채다"],
+  "추측하다":["짐작하다","가늠하다","예상하다","미루어 생각하다","어림하다"],
+  "깨닫다":["자각하다","인식하다","알아차리다","실감하다","비로소 알다"],
+  "알아차리다":["눈치채다","깨닫다","감지하다","인지하다","파악하다"],
+  "눈치채다":["알아차리다","감지하다","파악하다","기미를 읽다","느끼다"],
+  "이해하다":["납득하다","파악하다","알아듣다","헤아리다","뜻을 알다"],
+  "납득하다":["이해하다","수긍하다","받아들이다","고개를 끄덕이다","이치를 알다"],
+
+  "좋다":["마음에 들다","괜찮다","훌륭하다","만족스럽다","긍정적이다"],
+  "싫다":["꺼리다","마음에 들지 않다","불쾌하다","싫어하다","달갑지 않다"],
+  "편하다":["편안하다","수월하다","부담 없다","안락하다","마음이 놓이다"],
+  "불편하다":["거북하다","불쾌하다","편치 않다","마뜩잖다","어색하다"],
+  "힘들다":["고되다","버겁다","벅차다","곤란하다","고단하다"],
+  "고되다":["힘들다","고단하다","버겁다","수월하지 않다","지치게 하다"],
+  "지치다":["피곤하다","기진맥진하다","녹초가 되다","힘이 빠지다","기력이 떨어지다"],
+  "피곤하다":["지치다","고단하다","기력이 없다","피로하다","힘이 빠지다"],
+  "아프다":["쓰리다","저리다","고통스럽다","통증이 있다","아픔을 느끼다"],
+  "저리다":["아리다","찌릿하다","먹먹하다","감각이 둔해지다","가슴이 저리다"],
+  "쓰리다":["아프다","아리다","따갑다","속이 쓰리다","마음이 쓰리다"],
+
+  "조용히":["가만히","잠자코","살며시","말없이","고요히"],
+  "살며시":["가만히","조심스럽게","부드럽게","소리 없이","조용히"],
+  "슬며시":["살며시","조용히","은근히","소리 없이","가볍게"],
+  "가만히":["조용히","잠자코","움직임 없이","말없이","꼼짝 않고"],
+  "몰래":["남몰래","은밀히","살그머니","눈을 피해","아무도 모르게"],
+  "은밀히":["몰래","남몰래","조용히","비밀스럽게","은근히"],
+  "조심스레":["조심스럽게","신중하게","살며시","주의 깊게","머뭇거리며"],
+  "천천히":["느리게","서서히","차분히","느릿하게","완만하게"],
+  "빠르게":["재빨리","신속하게","민첩하게","급히","속도를 내어"],
+  "급히":["서둘러","재빨리","다급하게","빠르게","황급히"],
+  "황급히":["급히","다급하게","허둥지둥","서둘러","급작스럽게"],
+  "다급하게":["급히","황급히","초조하게","서둘러","급박하게"],
+  "단정히":["깔끔하게","정갈하게","반듯하게","가지런히","말끔하게"],
+  "가지런히":["반듯하게","정갈하게","고르게","나란히","흐트러짐 없이"],
+
+  "정원":["뜰","후원","화원","궁정의 뜰","정원 안"],
+  "복도":["회랑","통로","긴 복도","궁의 회랑","복도 끝"],
+  "방":["실내","방 안","침실","거처","실"],
+  "침실":["침방","잠자리","방","내실","침실 안"],
+  "창문":["창","유리창","창가","창호","창문가"],
+  "창가":["창문 곁","창 옆","창문가","창문 근처","창가 자리"],
+  "문":["문짝","출입문","문간","문호","문 앞"],
+  "마당":["뜰","안마당","정원","앞뜰","마당 안"],
+  "길":["도로","길목","통로","오솔길","길 위"],
+  "거리":["길","대로","거리 안","가로","거리 풍경"],
+  "골목":["골목길","좁은 길","이면도로","뒷골목","샛길"],
+  "광장":["넓은 터","마당","중앙 광장","공터","사람들이 모이는 곳"],
+
+  "옷":["의복","차림","복장","옷차림","의상"],
+  "제복":["군복","근무복","기사 제복","정복","제식 복장"],
+  "예복":["의례복","정장","예장","공식 복장","의식용 복장"],
+  "장갑":["손장갑","글러브","장갑 낀 손","손을 덮는 장갑"],
+  "검":["칼","검신","장검","도검","무기"],
+  "칼":["검","칼날","도검","날붙이","무기"],
+  "검집":["칼집","집","검을 넣는 집","칼집"],
+  "갑옷":["방어구","철갑","갑주","전투복","보호 장비"],
+
+  "기사":["무인","근위 기사","호위 기사","검사","기사단원"],
+  "근위기사":["근위","황실 기사","호위 기사","궁정 기사","근위대원"],
+  "호위기사":["경호 기사","근위 기사","전담 기사","호위 담당","수행 기사"],
+  "황제":["제왕","군주","제국의 군주","황실의 주인"],
+  "황궁":["궁궐","궁정","제궁","궁","황실 궁전"],
+  "황실":["황가","제실","황가 일문","황족 가문","황제의 집안"],
+  "황족":["왕족","황실 사람","제실 일원","황가의 사람"],
+  "귀족":["상류 귀족","귀문","귀족 계층","명문가 사람","귀족가 사람"],
+  "영애":["귀족 영애","아가씨","귀족가의 딸","영식의 여성형 표현"],
+  "후작":["후작 각하","고위 귀족","후작가 당주","후작 작위자"],
+  "백작":["백작 각하","귀족","백작가 당주","백작 작위자"],
+
+  "명령":["지시","분부","명","지령","하명"],
+  "규정":["규칙","법규","규율","조항","정해진 원칙"],
+  "규칙":["규정","법도","원칙","기율","정해진 방식"],
+  "원칙":["규칙","기준","방침","원리","기본 방침"],
+  "의무":["책무","책임","소임","해야 할 일","의무 사항"],
+  "책임":["책무","의무","소임","부담","맡은 바"],
+  "소임":["책무","임무","직무","역할","맡은 일"],
+  "임무":["직무","책무","소임","업무","맡은 일"],
+  "역할":["임무","기능","몫","소임","담당"],
+  "직무":["임무","책무","업무","소임","맡은 일"],
+
+  "사건":["일","사태","사고","사건사고","벌어진 일"],
+  "상황":["형편","정황","사정","국면","처지"],
+  "사정":["형편","상황","사연","내막","처지"],
+  "정황":["상황","사정","형편","맥락","주변 사정"],
+  "이유":["까닭","연유","원인","사유","근거"],
+  "원인":["이유","까닭","발단","요인","근원"],
+  "결과":["귀결","결말","성과","결론","끝"],
+  "결말":["결과","끝","마무리","종말","귀결"],
+  "시작":["처음","출발","발단","개시","첫머리"],
+  "끝":["마지막","종결","끝자락","마무리","종점"],
+  "중간":["도중","가운데","중턱","중간 지점","한가운데"],
+
+  "말":["이야기","발언","한마디","언사","말씨"],
+  "이야기":["말","사연","담화","대화","서사"],
+  "사연":["이야기","내막","곡절","사정","연유"],
+  "비밀":["은밀한 일","숨긴 사실","내밀한 사정","기밀","비사"],
+  "진실":["사실","실상","참된 내용","실체","진상"],
+  "거짓":["허위","거짓말","가식","위선","사실이 아닌 말"],
+  "약속":["서약","맹세","언약","약정","다짐"],
+  "맹세":["서약","선서","다짐","언약","굳은 약속"],
+
+  "마음":["심정","감정","속내","가슴","내심","심중"],
+  "속내":["마음","본심","심중","내심","진짜 생각"],
+  "본심":["속내","진심","마음","내심","참뜻"],
+  "진심":["본심","참마음","속내","진정","마음 깊은 곳"],
+  "감정":["정서","마음","심정","기분","정념"],
+  "기분":["감정","심정","마음 상태","기색","정서"],
+  "사랑":["애정","연정","사모","정","사랑하는 마음"],
+  "연정":["사랑","애정","사모","연모","사랑의 감정"],
+  "애정":["사랑","정","연정","다정함","애틋한 마음"],
+  "호감":["좋은 감정","친밀감","끌림","우호감","마음이 감"],
+  "끌림":["호감","매력","마음이 향함","당김","이끌림"],
+  "미련":["아쉬움","미련한 마음","남은 정","떠나지 못하는 마음","잔정"],
+  "집착":["고집","미련","강박","매달림","놓지 못함"],
+
+  "다정하다":["상냥하다","온화하다","따뜻하다","살갑다","애틋하다"],
+  "상냥하다":["다정하다","부드럽다","친절하다","온화하다","사근사근하다"],
+  "친절하다":["상냥하다","다정하다","정중하다","배려 깊다","살갑다"],
+  "냉정하다":["차갑다","이성적이다","침착하다","무정하다","감정을 배제하다"],
+  "냉담하다":["차갑다","무심하다","냉랭하다","정이 없다","반응이 없다"],
+  "무심하다":["덤덤하다","태연하다","심드렁하다","냉담하다","관심이 없는 듯하다"],
+  "심드렁하다":["무심하다","덤덤하다","시큰둥하다","관심 없어 보이다","태연하다"],
+  "다급하다":["급박하다","초조하다","급하다","절박하다","마음이 급하다"],
+  "절박하다":["다급하다","절실하다","긴박하다","궁지에 몰리다","여유가 없다"],
+  "긴박하다":["급박하다","다급하다","위태롭다","숨 돌릴 틈 없다","팽팽하다"],
+  "위태롭다":["위험하다","아슬아슬하다","불안정하다","위험천만하다","금방이라도 무너질 듯하다"],
+
+  "예상하다":["예측하다","짐작하다","내다보다","가늠하다","예견하다"],
+  "예견하다":["내다보다","예측하다","예상하다","미리 알다","미리 짐작하다"],
+  "결정하다":["정하다","결심하다","선택하다","판단하다","결론 내리다"],
+  "선택하다":["고르다","택하다","결정하다","취하다","골라잡다"],
+  "판단하다":["결정하다","헤아리다","평가하다","가늠하다","분별하다"],
+  "결심하다":["마음을 정하다","뜻을 굳히다","결단하다","다짐하다","결정하다"],
+  "다짐하다":["결심하다","마음을 굳히다","스스로 약속하다","뜻을 세우다","맹세하다"],
+
+  "도와주다":["돕다","거들다","지원하다","힘을 보태다","손을 빌려주다"],
+  "돕다":["거들다","지원하다","보조하다","힘을 보태다","손을 빌려주다"],
+  "막다":["가로막다","차단하다","저지하다","막아서다","방어하다"],
+  "지키다":["보호하다","수호하다","방어하다","곁을 지키다","안전하게 두다"],
+  "보호하다":["지키다","수호하다","방어하다","감싸다","안전하게 하다"],
+  "구하다":["구출하다","살리다","구해 내다","위기에서 꺼내다","도와 살아남게 하다"],
+  "구출하다":["구하다","구해 내다","구조하다","위험에서 빼내다","살려 내다"],
+  "막아서다":["가로막다","앞을 막다","저지하다","몸으로 막다","방패가 되다"],
+
+  "바뀌다":["변하다","달라지다","변화하다","뒤바뀌다","전환되다"],
+  "변하다":["바뀌다","달라지다","변화하다","달라 보이다","성질이 달라지다"],
+  "달라지다":["변하다","바뀌다","차이가 생기다","변화하다","예전과 다르게 되다"],
+  "흐르다":["이어지다","흘러가다","지나다","퍼지다","계속되다"],
+  "이어지다":["계속되다","지속되다","연결되다","끊이지 않다","뒤따르다"],
+  "끊기다":["멈추다","중단되다","이어지지 않다","뚝 끊어지다","사라지다"],
+  "멎다":["멈추다","그치다","정지하다","잦아들다","끝나다"],
+  "그치다":["멎다","끝나다","잦아들다","멈추다","중단되다"],
+  "잦아들다":["가라앉다","줄어들다","수그러들다","조용해지다","점차 멎다"],
+  "가라앉다":["진정되다","잦아들다","낮아지다","침잠하다","차분해지다"],
+  "침잠하다":["가라앉다","침묵하다","깊이 잠기다","생각에 빠지다","고요해지다"]
+});
+
 function normalizeSynonymWord(text){
   return (text||"")
     .trim()
@@ -2524,22 +3552,341 @@ document.querySelector("#closeSyn").addEventListener("click",()=>{document.query
 
 
 const spellRules = [
-  {name:"왠지", re:/웬지/g, suggestion:"왠지", note:"\'왠지\'가 맞는 표기입니다."},
-  {name:"창밖", re:/창\s+밖/g, suggestion:"창밖", note:"\'창밖\'은 한 단어이므로 붙여 씁니다."},
-  {name:"한 번", re:/한번/g, suggestion:"한 번", note:"횟수를 뜻하는 경우에는 \'한 번\'으로 띄어 씁니다."},
-  {name:"변함없이", re:/변함\s+없이/g, suggestion:"변함없이", note:"\'변함없이\'는 한 단어이므로 붙여 씁니다."},
-  {name:"중복 공백", re:/ {2,}/g, suggestion:"공백 1칸", note:"연속된 공백이 있습니다."},
-  {name:"문장부호 앞 공백", re:/\s+([,.!?;:])/g, suggestion:"문장부호 앞 공백 삭제", note:"문장부호 바로 앞에는 보통 공백을 두지 않습니다."},
-  {name:"수 있다", re:/할수\s*있/g, suggestion:"할 수 있", note:"의존 명사 '수'는 앞말과 띄어 씁니다."},
-  {name:"수 없다", re:/할수\s*없/g, suggestion:"할 수 없", note:"의존 명사 '수'는 앞말과 띄어 씁니다."},
+  /* 자주 틀리는 활용·철자 */
+  {name:"먹었다", re:/머것다|먹엇다|머겄다/g, suggestion:"먹었다", note:"과거형은 '먹었다'로 씁니다."},
+  {name:"먹었-", re:/머겄(?=[어고지으는던]|$)|먹엇(?=[어고지으는던]|$)/g, suggestion:"먹었…", note:"'먹었-'으로 적는 것이 맞습니다."},
+  {name:"했다", re:/햇다/g, suggestion:"했다", note:"'하였다'의 준말은 '했다'입니다."},
+  {name:"했-", re:/햇(?=[어고지으는던]|$)/g, suggestion:"했…", note:"과거형 어간은 '했-'으로 적습니다."},
+  {name:"됐다", re:/됫다|됬다/g, suggestion:"됐다", note:"'되었다'의 준말은 '됐다'입니다."},
+  {name:"됐-", re:/됫(?=[어고지으는던]|$)|됬(?=[어고지으는던]|$)/g, suggestion:"됐…", note:"'되었-'의 준말은 '됐-'입니다."},
+  {name:"있었다", re:/잇었다|있엇다|잇엇다/g, suggestion:"있었다", note:"과거형은 '있었다'로 씁니다."},
+  {name:"없었다", re:/업었다|없엇다|업엇다/g, suggestion:"없었다", note:"과거형은 '없었다'로 씁니다."},
+  {name:"같았다", re:/같앗다/g, suggestion:"같았다", note:"과거형은 '같았다'로 씁니다."},
+  {name:"보았다", re:/보앗다/g, suggestion:"보았다", note:"과거형은 '보았다'로 씁니다."},
+  {name:"좋았다", re:/좋앗다/g, suggestion:"좋았다", note:"과거형은 '좋았다'로 씁니다."},
+  {name:"싫었다", re:/싫엇다/g, suggestion:"싫었다", note:"과거형은 '싫었다'로 씁니다."},
+  {name:"들었다", re:/들엇다/g, suggestion:"들었다", note:"과거형은 '들었다'로 씁니다."},
+  {name:"걸었다", re:/걸엇다/g, suggestion:"걸었다", note:"과거형은 '걸었다'로 씁니다."},
+  {name:"울었다", re:/울엇다/g, suggestion:"울었다", note:"과거형은 '울었다'로 씁니다."},
+  {name:"웃었다", re:/웃엇다/g, suggestion:"웃었다", note:"과거형은 '웃었다'로 씁니다."},
+  {name:"읽었다", re:/읽엇다/g, suggestion:"읽었다", note:"과거형은 '읽었다'로 씁니다."},
+  {name:"썼다", re:/썻다/g, suggestion:"썼다", note:"'쓰었다'의 준말은 '썼다'입니다."},
+  {name:"봤다", re:/봣다/g, suggestion:"봤다", note:"'보았다'의 준말은 '봤다'입니다."},
+  {name:"줬다", re:/줫다/g, suggestion:"줬다", note:"'주었다'의 준말은 '줬다'입니다."},
+  {name:"왔다", re:/왓다/g, suggestion:"왔다", note:"과거형은 '왔다'로 씁니다."},
+  {name:"갔다", re:/갓다/g, suggestion:"갔다", note:"과거형은 '갔다'로 씁니다."},
+
+  /* 자주 틀리는 낱말 */
+  {name:"왠지", re:/웬지/g, suggestion:"왠지", note:"'왠지'가 맞는 표기입니다."},
+  {name:"어떻게", re:/어떡해(?=\s*(?:해야|하면|하지|할|할까|할지))/g, suggestion:"어떻게", note:"방법을 묻는 부사 자리에서는 '어떻게'를 씁니다."},
+  {name:"며칠", re:/몇일/g, suggestion:"며칠", note:"'몇일'이 아니라 '며칠'이 표준어입니다."},
+  {name:"금세", re:/금새/g, suggestion:"금세", note:"'금세'가 맞는 표기입니다."},
+  {name:"웬", re:/왠(?=\s*(?:일|사람|떡|말|일인지|일이))/g, suggestion:"웬", note:"'어찌 된'의 뜻은 '웬'으로 씁니다."},
+  {name:"되레", re:/되려(?=\s)/g, suggestion:"되레", note:"'도리어'의 뜻이라면 '되레'가 표준어입니다."},
+  {name:"오랜만", re:/오랫만/g, suggestion:"오랜만", note:"'오랜만'이 맞는 표기입니다."},
+  {name:"역할", re:/역활/g, suggestion:"역할", note:"'역할'이 맞는 표기입니다."},
+  {name:"설렘", re:/설레임/g, suggestion:"설렘", note:"'설레다'의 명사형은 '설렘'입니다."},
+  {name:"바라다", re:/바래다(?=\s*(?:고|며|서|도|만|왔다|왔다가|본다|보았다))/g, suggestion:"바라다", note:"'원하다'의 뜻이라면 기본형은 '바라다'입니다."},
+
+  /* 띄어쓰기 */
+  /* 기간·횟수 */
+  {name:"일 년", re:/일년(?=\s|[,.!?]|$|[은는이가을를도만째간전후])/g, suggestion:"일 년", note:"기간을 세는 '년'은 앞의 수 관형사와 띄어 '일 년'으로 씁니다."},
+  {name:"이 년", re:/이년(?=\s|[,.!?]|$|[은는이가을를도만째간전후])/g, suggestion:"이 년", note:"기간을 세는 표현이라면 '이 년'으로 띄어 씁니다. 사람을 낮잡아 이르는 '이년'과는 구별합니다."},
+  {name:"삼 년", re:/삼년(?=\s|[,.!?]|$|[은는이가을를도만째간전후])/g, suggestion:"삼 년", note:"기간을 세는 '년'은 앞말과 띄어 씁니다."},
+  {name:"사 년", re:/사년(?=\s|[,.!?]|$|[은는이가을를도만째간전후])/g, suggestion:"사 년", note:"기간을 세는 '년'은 앞말과 띄어 씁니다."},
+  {name:"오 년", re:/오년(?=\s|[,.!?]|$|[은는이가을를도만째간전후])/g, suggestion:"오 년", note:"기간을 세는 '년'은 앞말과 띄어 씁니다."},
+  {name:"한 번", re:/한번/g, suggestion:"한 번", note:"횟수를 뜻하는 경우에는 '한 번'으로 띄어 씁니다."},
+  {name:"두 번", re:/두번/g, suggestion:"두 번", note:"횟수를 뜻하는 '번'은 앞말과 띄어 씁니다."},
+  {name:"세 번", re:/세번/g, suggestion:"세 번", note:"횟수를 뜻하는 '번'은 앞말과 띄어 씁니다."},
+  {name:"네 번", re:/네번/g, suggestion:"네 번", note:"횟수를 뜻하는 '번'은 앞말과 띄어 씁니다."},
+  {name:"몇 번", re:/몇번/g, suggestion:"몇 번", note:"횟수를 뜻하는 '번'은 앞말과 띄어 씁니다."},
+  {name:"몇 차례", re:/몇차례/g, suggestion:"몇 차례", note:"'몇'과 의존 명사 '차례'는 띄어 씁니다."},
+  {name:"한 차례", re:/한차례/g, suggestion:"한 차례", note:"횟수를 세는 '차례'는 앞말과 띄어 씁니다."},
+  {name:"두 차례", re:/두차례/g, suggestion:"두 차례", note:"횟수를 세는 '차례'는 앞말과 띄어 씁니다."},
+  {name:"세 차례", re:/세차례/g, suggestion:"세 차례", note:"횟수를 세는 '차례'는 앞말과 띄어 씁니다."},
+  {name:"수차례", re:/수\s+차례/g, suggestion:"수차례", note:"'여러 차례'의 뜻인 '수차례(數次例)'는 한 단어이므로 붙여 씁니다."},
+
+  /* 합성동사·본용언 결합 */
+  {name:"말아 올리다", re:/말아올리(?=다|고|며|면|니|는|던|자|어|었|겠|ㄴ|ㄹ)/g, suggestion:"말아 올리…", note:"'말다'와 '올리다'가 각각의 뜻을 유지하는 경우에는 '말아 올리다'로 띄어 씁니다."},
+  {name:"말아 올렸다", re:/말아올렸다/g, suggestion:"말아 올렸다", note:"이 표현은 '말아 올렸다'로 띄어 쓰는 것이 적절합니다."},
+  {name:"감아올리다", re:/감아\s+올리(?=다|고|며|면|니|는|던|자|어|었|겠|ㄴ|ㄹ)/g, suggestion:"감아올리…", note:"'감아올리다'는 사전에 오른 한 단어이므로 붙여 씁니다."},
+  {name:"감아올렸다", re:/감아\s+올렸다/g, suggestion:"감아올렸다", note:"'감아올리다'의 활용형이므로 붙여 씁니다."},
+  {name:"말려들다", re:/말려\s+들(?=다|고|며|면|니|는|던|자|어|었|겠|ㄴ|ㄹ)/g, suggestion:"말려들…", note:"'말려들다'는 사전에 오른 한 단어이므로 붙여 씁니다."},
+  {name:"말려들었다", re:/말려\s+들었다/g, suggestion:"말려들었다", note:"'말려들다'의 활용형이므로 붙여 씁니다."},
+  {name:"끌려들다", re:/끌려\s+들(?=다|고|며|면|니|는|던|자|어|었|겠|ㄴ|ㄹ)/g, suggestion:"끌려들…", note:"'끌려들다'는 한 단어로 쓰이는 동사이므로 붙여 씁니다."},
+  {name:"밀려들다", re:/밀려\s+들(?=다|고|며|면|니|는|던|자|어|었|겠|ㄴ|ㄹ)/g, suggestion:"밀려들…", note:"'밀려들다'는 한 단어이므로 붙여 씁니다."},
+  {name:"스며들다", re:/스며\s+들(?=다|고|며|면|니|는|던|자|어|었|겠|ㄴ|ㄹ)/g, suggestion:"스며들…", note:"'스며들다'는 한 단어이므로 붙여 씁니다."},
+  {name:"파고들다", re:/파고\s+들(?=다|고|며|면|니|는|던|자|어|었|겠|ㄴ|ㄹ)/g, suggestion:"파고들…", note:"'파고들다'는 한 단어이므로 붙여 씁니다."},
+  {name:"빨려들다", re:/빨려\s+들(?=다|고|며|면|니|는|던|자|어|었|겠|ㄴ|ㄹ)/g, suggestion:"빨려들…", note:"'빨려들다'는 한 단어로 쓰므로 붙여 씁니다."},
+
+  {name:"창밖", re:/창\s+밖/g, suggestion:"창밖", note:"'창밖'은 한 단어이므로 붙여 씁니다."},
+
+  {name:"변함없이", re:/변함\s+없이/g, suggestion:"변함없이", note:"'변함없이'는 한 단어이므로 붙여 씁니다."},
+  {name:"할 수", re:/할수(?=\s*(?:있|없|도|만|밖에|록|는|가|를|는지))/g, suggestion:"할 수", note:"의존 명사 '수'는 앞말과 띄어 씁니다."},
+  {name:"할 수 있다", re:/할수\s*있/g, suggestion:"할 수 있", note:"의존 명사 '수'는 앞말과 띄어 씁니다."},
+  {name:"할 수 없다", re:/할수\s*없/g, suggestion:"할 수 없", note:"의존 명사 '수'는 앞말과 띄어 씁니다."},
+  {name:"볼 수", re:/볼수(?=\s*(?:있|없|도|만|밖에|는|가|를))/g, suggestion:"볼 수", note:"의존 명사 '수'는 앞말과 띄어 씁니다."},
+  {name:"갈 수", re:/갈수(?=\s*(?:있|없|도|만|밖에|는|가|를))/g, suggestion:"갈 수", note:"의존 명사 '수'는 앞말과 띄어 씁니다."},
+  {name:"될 수", re:/될수(?=\s*(?:있|없|도|만|밖에|는|가|를))/g, suggestion:"될 수", note:"의존 명사 '수'는 앞말과 띄어 씁니다."},
   {name:"것 같다", re:/것같/g, suggestion:"것 같", note:"'것 같다'는 띄어 쓰는 것이 원칙입니다."},
   {name:"수밖에", re:/수\s+밖에/g, suggestion:"수밖에", note:"'수밖에'는 보조사 '밖에'가 결합한 형태로 붙여 씁니다."},
-  {name:"안 되다", re:/안되([어었겠면지]|는|고|니|다|도록|게)/g, suggestion:"안 되…", note:"'되다'의 부정은 문맥에 따라 '안 되다'로 띄어 쓰는 경우가 많습니다."},
-  {name:"되어/돼", re:/되어서/g, suggestion:"돼서 또는 되어서", note:"둘 다 가능하지만 작품 내 표기를 통일할 수 있습니다."},
+  {name:"뿐이다", re:/뿐\s+이다/g, suggestion:"뿐이다", note:"서술격 조사 '이다'는 앞말에 붙여 씁니다."},
+  {name:"뿐이었다", re:/뿐\s+이었다/g, suggestion:"뿐이었다", note:"서술격 조사 '이었다'는 앞말에 붙여 씁니다."},
+  {name:"때문에", re:/때문\s+에/g, suggestion:"때문에", note:"'때문에'는 붙여 씁니다."},
+  {name:"그동안", re:/그\s+동안/g, suggestion:"그동안", note:"'그동안'은 한 단어입니다."},
+  {name:"그때", re:/그\s+때/g, suggestion:"그때", note:"'그때'는 한 단어입니다."},
+  {name:"이때", re:/이\s+때/g, suggestion:"이때", note:"'이때'는 한 단어입니다."},
+  {name:"그곳", re:/그\s+곳/g, suggestion:"그곳", note:"'그곳'은 한 단어입니다."},
+  {name:"이곳", re:/이\s+곳/g, suggestion:"이곳", note:"'이곳'은 한 단어입니다."},
+  {name:"어느새", re:/어느\s+새/g, suggestion:"어느새", note:"'어느새'는 한 단어입니다."},
+  {name:"더 이상", re:/더이상/g, suggestion:"더 이상", note:"'더 이상'은 띄어 씁니다."},
+  {name:"할 뿐", re:/할뿐/g, suggestion:"할 뿐", note:"의존 명사 '뿐'은 관형어 뒤에서 띄어 씁니다."},
+  {name:"했을 뿐", re:/했을뿐/g, suggestion:"했을 뿐", note:"의존 명사 '뿐'은 관형어 뒤에서 띄어 씁니다."},
+  {name:"한 채", re:/한채(?=\s|[,.!?]|$)/g, suggestion:"한 채", note:"상태를 나타내는 의존 명사 '채'는 띄어 씁니다."},
+  {name:"본 적", re:/본적(?=\s*(?:이|은|도|조차|없|있))/g, suggestion:"본 적", note:"경험을 뜻하는 의존 명사 '적'은 띄어 씁니다."},
+  {name:"한 적", re:/한적(?=\s*(?:이|은|도|조차|없|있))/g, suggestion:"한 적", note:"경험을 뜻하는 의존 명사 '적'은 띄어 씁니다."},
+  {name:"갈 듯", re:/갈듯(?=\s|[,.!?]|$)/g, suggestion:"갈 듯", note:"의존 명사 '듯'은 관형어 뒤에서 띄어 씁니다."},
+  {name:"한 듯", re:/한듯(?=\s|[,.!?]|$)/g, suggestion:"한 듯", note:"의존 명사 '듯'은 관형어 뒤에서 띄어 씁니다."},
+
+  /* 관형형 + 의존 명사: 소설에서 자주 헷갈리는 유형 */
+  {name:"할 법한", re:/할법한/g, suggestion:"할 법한", note:"의존 명사 '법'은 관형형 뒤에서 띄어 씁니다."},
+  {name:"할 법하다", re:/할법하(?=다|고|며|면|니|는|던|였|았|겠)/g, suggestion:"할 법하…", note:"'할 법하다'처럼 '법' 앞을 띄어 씁니다."},
+  {name:"그럴 법한", re:/그럴법한/g, suggestion:"그럴 법한", note:"의존 명사 '법'은 관형형 뒤에서 띄어 씁니다."},
+  {name:"그럴 법하다", re:/그럴법하(?=다|고|며|면|니|는|던|였|았|겠)/g, suggestion:"그럴 법하…", note:"'그럴 법하다'처럼 띄어 씁니다."},
+
+  {name:"할 듯한", re:/할듯한/g, suggestion:"할 듯한", note:"'듯'은 앞의 관형형과 띄어 씁니다."},
+  {name:"할 듯하다", re:/할듯하(?=다|고|며|면|니|는|던|였|았|겠)/g, suggestion:"할 듯하…", note:"'할 듯하다'처럼 앞말과 '듯하다'를 띄어 씁니다."},
+  {name:"한 듯한", re:/한듯한/g, suggestion:"한 듯한", note:"'듯'은 앞의 관형형과 띄어 씁니다."},
+  {name:"그런 듯한", re:/그런듯한/g, suggestion:"그런 듯한", note:"'듯'은 앞의 관형형과 띄어 씁니다."},
+  {name:"그럴 듯한", re:/그럴듯한/g, suggestion:"그럴듯한 / 그럴 듯한", note:"'그럴듯하다'는 한 단어로도 쓰이므로 문맥에 따라 확인이 필요합니다.", severity:"review"},
+
+  {name:"할 만한", re:/할만한/g, suggestion:"할 만한", note:"보조 형용사 '만하다'는 앞말과 띄어 쓰는 것이 원칙입니다.", severity:"review"},
+  {name:"할 만하다", re:/할만하(?=다|고|며|면|니|는|던|였|았|겠)/g, suggestion:"할 만하…", note:"'할 만하다'로 띄어 쓰는 것이 원칙입니다. 붙여 쓰기가 허용되는 경우도 있어 문맥과 작품 내 통일을 확인하세요.", severity:"review"},
+  {name:"볼 만한", re:/볼만한/g, suggestion:"볼 만한", note:"'볼 만한'처럼 띄어 쓰는 것이 원칙입니다.", severity:"review"},
+  {name:"읽을 만한", re:/읽을만한/g, suggestion:"읽을 만한", note:"'읽을 만한'처럼 띄어 쓰는 것이 원칙입니다.", severity:"review"},
+
+  {name:"할 리", re:/할리(?=\s*(?:가|는|도|만|없|있)|[,.!?]|$)/g, suggestion:"할 리", note:"의존 명사 '리'는 관형형 뒤에서 띄어 씁니다."},
+  {name:"그럴 리", re:/그럴리(?=\s*(?:가|는|도|만|없|있)|[,.!?]|$)/g, suggestion:"그럴 리", note:"의존 명사 '리'는 관형형 뒤에서 띄어 씁니다."},
+  {name:"알 리", re:/알리(?=\s*(?:가|는|도|만|없|있)|[,.!?]|$)/g, suggestion:"알 리", note:"의존 명사 '리'는 관형형 뒤에서 띄어 씁니다."},
+
+  {name:"할 줄", re:/할줄(?=\s*(?:알|모르|은|도|만|이)|[,.!?]|$)/g, suggestion:"할 줄", note:"의존 명사 '줄'은 관형형 뒤에서 띄어 씁니다."},
+  {name:"볼 줄", re:/볼줄(?=\s*(?:알|모르|은|도|만|이)|[,.!?]|$)/g, suggestion:"볼 줄", note:"의존 명사 '줄'은 관형형 뒤에서 띄어 씁니다."},
+  {name:"알 줄", re:/알줄(?=\s*(?:알|모르|은|도|만|이)|[,.!?]|$)/g, suggestion:"알 줄", note:"의존 명사 '줄'은 관형형 뒤에서 띄어 씁니다."},
+
+  {name:"할 턱", re:/할턱(?=\s*(?:이|은|도|만|없|있)|[,.!?]|$)/g, suggestion:"할 턱", note:"의존 명사 '턱'은 관형형 뒤에서 띄어 씁니다."},
+  {name:"그럴 턱", re:/그럴턱(?=\s*(?:이|은|도|만|없|있)|[,.!?]|$)/g, suggestion:"그럴 턱", note:"의존 명사 '턱'은 관형형 뒤에서 띄어 씁니다."},
+
+  {name:"할 나위", re:/할나위(?=\s*(?:가|는|도|만|없|있)|[,.!?]|$)/g, suggestion:"할 나위", note:"의존 명사 '나위'는 관형형 뒤에서 띄어 씁니다."},
+  {name:"더할 나위", re:/더할나위(?=\s*(?:가|는|도|만|없|있)|[,.!?]|$)/g, suggestion:"더할 나위", note:"'더할 나위 없다'처럼 띄어 씁니다."},
+
+  {name:"할 바", re:/할바(?=\s*(?:가|는|도|만|없|있|를)|[,.!?]|$)/g, suggestion:"할 바", note:"의존 명사 '바'는 관형형 뒤에서 띄어 씁니다."},
+  {name:"할 뿐", re:/할뿐/g, suggestion:"할 뿐", note:"의존 명사 '뿐'은 관형형 뒤에서 띄어 씁니다."},
+  {name:"할 데", re:/할데(?=\s|[,.!?]|$)/g, suggestion:"할 데", note:"의존 명사 '데'는 관형형 뒤에서 띄어 씁니다.", severity:"review"},
+  {name:"할 만큼", re:/할만큼/g, suggestion:"할 만큼", note:"의존 명사 '만큼'은 관형형 뒤에서 띄어 씁니다."},
+
+  {name:"듯하다", re:/듯\s+하다/g, suggestion:"듯하다", note:"'듯하다' 자체는 붙여 씁니다. 예: '할 듯하다'."},
+  {name:"안 되다", re:/안되([어었겠면지]|는|고|니|다|도록|게)/g, suggestion:"안 되…", note:"'되다'의 부정은 문맥에 따라 '안 되다'로 띄어 쓰는 경우가 많습니다.", severity:"review"},
+  {name:"하지 않다", re:/하지않/g, suggestion:"하지 않", note:"'않다'는 앞말과 띄어 씁니다."},
+  {name:"되지 않다", re:/되지않/g, suggestion:"되지 않", note:"'않다'는 앞말과 띄어 씁니다."},
+  {name:"보지 않다", re:/보지않/g, suggestion:"보지 않", note:"'않다'는 앞말과 띄어 씁니다."},
+  {name:"할 것이다", re:/할것/g, suggestion:"할 것", note:"의존 명사 '것'은 관형어 뒤에서 띄어 씁니다."},
+  {name:"한 것이다", re:/한것/g, suggestion:"한 것", note:"의존 명사 '것'은 관형어 뒤에서 띄어 씁니다."},
+  {name:"볼 것이다", re:/볼것/g, suggestion:"볼 것", note:"의존 명사 '것'은 관형어 뒤에서 띄어 씁니다."},
+  {name:"갈 것이다", re:/갈것/g, suggestion:"갈 것", note:"의존 명사 '것'은 관형어 뒤에서 띄어 씁니다."},
+
+  /* 되/돼 · 안/않 */
+  {name:"돼요", re:/되요/g, suggestion:"돼요", note:"'되어요'의 준말은 '돼요'입니다."},
+  {name:"돼서", re:/되서/g, suggestion:"돼서", note:"'되어서'의 준말은 '돼서'입니다."},
+  {name:"돼도", re:/되도/g, suggestion:"돼도", note:"'되어도'의 준말은 '돼도'입니다."},
+  {name:"돼야", re:/되야/g, suggestion:"돼야", note:"'되어야'의 준말은 '돼야'입니다."},
+  {name:"안 됐다", re:/안\s*(?:됬다|됫다|됐다)/g, suggestion:"안 됐다", note:"부정 부사 '안'은 뒤의 '됐다'와 띄어 씁니다."},
+  {name:"안 되다", re:/안되다/g, suggestion:"안 되다", note:"단순 부정의 뜻이라면 '안 되다'로 띄어 씁니다.", severity:"review"},
+  {name:"않 되다", re:/않\s+되/g, suggestion:"안 되… / 되지 않…", note:"'안'과 '않-'의 쓰임을 확인하세요. '않'은 보통 '-지 않다' 형태로 씁니다.", severity:"review"},
+  {name:"안 하다", re:/안하다/g, suggestion:"안 하다", note:"부정 부사 '안'은 뒤의 용언과 띄어 씁니다.", severity:"review"},
+  {name:"안 보다", re:/안보다/g, suggestion:"안 보다", note:"부정 부사 '안'은 뒤의 용언과 띄어 씁니다.", severity:"review"},
+
+  /* 데/대 · 든/던 — 문맥 확인형 */
+  {name:"-는데", re:/([가-힣]+)는대(?=\s|[,.!?]|$)/g, suggestion:"…는데", note:"배경·상황을 잇는 연결 어미라면 '-는데'가 맞습니다. 전해 들은 말을 나타내는 '-대'와 구별하세요.", severity:"review"},
+  {name:"-은데", re:/([가-힣]+)은대(?=\s|[,.!?]|$)/g, suggestion:"…은데", note:"상황을 잇는 연결 어미라면 '-은데'가 맞습니다. 문맥을 확인하세요.", severity:"review"},
+  {name:"-ㄴ데", re:/([가-힣]+)ㄴ대(?=\s|[,.!?]|$)/g, suggestion:"…ㄴ데", note:"연결 어미 '-ㄴ데'인지 전언의 '-대'인지 문맥을 확인하세요.", severity:"review"},
+  {name:"-든지/-던지", re:/[가-힣]+던지(?=\s+(?:말든지|말든|아니든|상관없이)|[,.!?]|$)/g, suggestion:"-든지 / -던지 확인", note:"선택·무관의 뜻은 '-든지', 과거를 떠올리며 묻는 뜻은 '-던지'입니다.", severity:"review"},
+  {name:"-든/-던", re:/[가-힣]+던(?=\s+(?:말든|상관없이|아니든))/g, suggestion:"-든 / -던 확인", note:"선택을 나타내면 '-든', 과거의 회상·지속을 나타내면 '-던'입니다.", severity:"review"},
+
+  /* 왠/웬 및 자주 틀리는 말 */
+  {name:"웬일", re:/왠일/g, suggestion:"웬일", note:"'어찌 된 일'의 뜻은 '웬일'입니다."},
+  {name:"웬만하다", re:/왠만하/g, suggestion:"웬만하…", note:"'웬만하다'가 맞는 표기입니다."},
+  {name:"웬만큼", re:/왠만큼/g, suggestion:"웬만큼", note:"'웬만큼'이 맞는 표기입니다."},
+  {name:"대가", re:/댓가/g, suggestion:"대가", note:"'대가(代價)'가 맞는 표기입니다."},
+  {name:"희한하다", re:/희안하/g, suggestion:"희한하…", note:"'희한하다'가 맞는 표기입니다."},
+  {name:"어이없다", re:/어의없/g, suggestion:"어이없…", note:"'어이없다'가 맞는 표기입니다."},
+  {name:"뒤치다꺼리", re:/뒤치닥거리/g, suggestion:"뒤치다꺼리", note:"'뒤치다꺼리'가 맞는 표기입니다."},
+  {name:"개수", re:/갯수/g, suggestion:"개수", note:"'개수(個數)'가 맞는 표기입니다."},
+  {name:"초점", re:/촛점/g, suggestion:"초점", note:"'초점(焦點)'이 맞는 표기입니다."},
+
+  /* 의존 명사·조사 */
+  {name:"한 대로", re:/한대로(?=\s|[,.!?]|$)/g, suggestion:"한 대로", note:"'어떤 모양이나 상태와 같이'의 뜻인 의존 명사 '대로'는 앞말과 띄어 씁니다.", severity:"review"},
+  {name:"말한 대로", re:/말한대로/g, suggestion:"말한 대로", note:"의존 명사 '대로'는 관형어 뒤에서 띄어 씁니다."},
+  {name:"생각한 만큼", re:/생각한만큼/g, suggestion:"생각한 만큼", note:"정도를 나타내는 의존 명사 '만큼'은 앞말과 띄어 씁니다."},
+  {name:"할 만큼", re:/할만큼/g, suggestion:"할 만큼", note:"정도를 나타내는 의존 명사 '만큼'은 앞말과 띄어 씁니다."},
+  {name:"알고 있는 바", re:/알고\s+있는바/g, suggestion:"알고 있는 바", note:"내용·사실을 뜻하는 의존 명사 '바'는 앞말과 띄어 씁니다."},
+  {name:"한 바", re:/한바(?=\s*(?:있|없|와|를|는|도))/g, suggestion:"한 바", note:"의존 명사 '바'는 관형어 뒤에서 띄어 씁니다."},
+  {name:"할 데", re:/할데(?=\s|[,.!?]|$)/g, suggestion:"할 데", note:"장소·경우를 뜻하는 의존 명사 '데'는 앞말과 띄어 씁니다.", severity:"review"},
+  {name:"갈 데", re:/갈데(?=\s|[,.!?]|$)/g, suggestion:"갈 데", note:"장소를 뜻하는 의존 명사 '데'는 앞말과 띄어 씁니다.", severity:"review"},
+  {name:"나뿐", re:/나\s+뿐(?=\s|[,.!?]|$|이)/g, suggestion:"나뿐", note:"보조사 '뿐'은 체언 뒤에 붙여 씁니다."},
+  {name:"너뿐", re:/너\s+뿐(?=\s|[,.!?]|$|이)/g, suggestion:"너뿐", note:"보조사 '뿐'은 체언 뒤에 붙여 씁니다."},
+  {name:"그 사람밖에", re:/그\s+사람\s+밖에/g, suggestion:"그 사람밖에", note:"보조사 '밖에'는 앞말에 붙여 씁니다."},
+
+  /* 보조 용언 — 허용 범위가 있어 확인 필요 */
+  {name:"-아/어 보다", re:/([가-힣]+(?:아|어|해))보(?=다|고|며|면|니|는|던|았|었|겠|자|도록|려고)/g, suggestion:"…아/어 보다", note:"보조 용언 '보다'는 띄어 쓰는 것이 원칙이나 붙여 쓰는 것도 허용되는 경우가 있습니다. 작품 내 표기를 통일하세요.", severity:"review"},
+  {name:"-아/어 주다", re:/([가-힣]+(?:아|어|해))주(?=다|고|며|면|니|는|던|었|겠)/g, suggestion:"…아/어 주다", note:"보조 용언 '주다'는 띄어 쓰는 것이 원칙이나 붙여 쓰기가 허용되는 경우도 있습니다. 통일을 확인하세요.", severity:"review"},
+  {name:"-아/어 버리다", re:/([가-힣]+(?:아|어|해))버리(?=다|고|며|면|니|는|던|었|겠)/g, suggestion:"…아/어 버리다", note:"보조 용언 '버리다'의 띄어쓰기를 작품 안에서 통일했는지 확인하세요.", severity:"review"},
+
+  /* 숫자·기간·단위 */
+  {name:"몇 년", re:/몇년/g, suggestion:"몇 년", note:"'몇'과 단위 명사 '년'은 띄어 씁니다."},
+  {name:"몇 개월", re:/몇개월/g, suggestion:"몇 개월", note:"'몇'과 단위 명사 '개월'은 띄어 씁니다."},
+  {name:"몇 달", re:/몇달/g, suggestion:"몇 달", note:"'몇 달'은 띄어 씁니다."},
+  {name:"세 해", re:/세해(?=\s|[,.!?]|$)/g, suggestion:"세 해", note:"수 관형사와 단위 명사는 띄어 씁니다."},
+
+  /* 소설에서 자주 나오는 합성 명사 */
+  {name:"눈앞", re:/눈\s+앞/g, suggestion:"눈앞", note:"'눈앞'은 한 단어이므로 붙여 씁니다."},
+  {name:"머릿속", re:/머리\s*속/g, suggestion:"머릿속", note:"'머릿속'은 사이시옷이 들어간 한 단어입니다."},
+  {name:"가슴속", re:/가슴\s+속/g, suggestion:"가슴속", note:"'가슴속'은 한 단어이므로 붙여 씁니다."},
+  {name:"마음속", re:/마음\s+속/g, suggestion:"마음속", note:"'마음속'은 한 단어이므로 붙여 씁니다."},
+  {name:"손끝", re:/손\s+끝/g, suggestion:"손끝", note:"'손끝'은 한 단어이므로 붙여 씁니다."},
+  {name:"입술", re:/입\s+술/g, suggestion:"입술", note:"'입술'은 한 단어입니다."},
+  {name:"귓가", re:/귀\s+가/g, suggestion:"귓가", note:"'귓가'가 맞는 표기입니다."},
+  {name:"콧등", re:/코\s+등/g, suggestion:"콧등", note:"'콧등'이 맞는 표기입니다."},
+
+  /* 시간 표현 */
+  {name:"오랫동안", re:/오랜\s+동안/g, suggestion:"오랫동안", note:"시간이 오래 지속됨을 뜻할 때는 '오랫동안'으로 씁니다."},
+  {name:"한동안", re:/한\s+동안/g, suggestion:"한동안", note:"'한동안'은 한 단어이므로 붙여 씁니다."},
+  {name:"몇 년 전", re:/몇년\s*전/g, suggestion:"몇 년 전", note:"'몇 년 전'으로 띄어 씁니다."},
+
+  /* 되/돼 · 안/않 */
+  {name:"돼요", re:/되요/g, suggestion:"돼요", note:"'되어요'의 준말은 '돼요'입니다."},
+  {name:"돼", re:/되(?=\s*(?:서|서도|서만|서야|서인지|서인지도))/g, suggestion:"돼", note:"'되어'가 줄어든 자리라면 '돼'를 씁니다.", severity:"review"},
+  {name:"안 됐다", re:/안됫다|안됬다|안되었다(?=\s|[,.!?]|$)/g, suggestion:"안 됐다", note:"'안 되었다'는 보통 '안 됐다'로 씁니다."},
+  {name:"안 되", re:/않되([어었겠면지]|는|고|니|다|도록|게)/g, suggestion:"안 되…", note:"부정 표현은 보통 '안 되다'로 씁니다."},
+  {name:"않다", re:/안(?=\s*(?:고|지만|는데|으며|으면|는|은|을)\b)/g, suggestion:"않", note:"부정 보조 용언 문맥이라면 '않다'일 수 있습니다. 문맥을 확인하세요.", severity:"review"},
+  {name:"않고", re:/안고(?=\s)/g, suggestion:"않고", note:"부정 연결 표현은 '않고'로 쓰는 경우가 많습니다. 문맥을 확인하세요.", severity:"review"},
+
+  /* 데/대 · 든/던 */
+  {name:"하는데", re:/하는대/g, suggestion:"하는데", note:"연결 어미는 '하는데'가 맞습니다."},
+  {name:"그런데", re:/그런대/g, suggestion:"그런데", note:"접속 표현은 '그런데'가 맞습니다."},
+  {name:"근데", re:/근대(?=\s|[,.!?]|$)/g, suggestion:"근데", note:"구어체는 '근데', 표준적인 형태는 '그런데'입니다."},
+  {name:"-ㄴ데", re:/([가-힣]+)은대/g, suggestion:"$1은데", note:"연결 어미는 보통 '-은데'입니다."},
+  {name:"-는데", re:/([가-힣]+)는대/g, suggestion:"$1는데", note:"연결 어미는 보통 '-는데'입니다."},
+  {name:"-던지/-든지", re:/([가-힣]+)던지(?=\s|[,.!?]|$)/g, suggestion:"$1든지", note:"선택의 뜻이라면 '-든지'가 맞습니다. 다만 회상·강조라면 '-던지'가 맞을 수 있습니다.", severity:"review"},
+  {name:"-든지/-던지", re:/([가-힣]+)든지(?=\s*(?:몰랐|알았|놀랐|궁금했|대단했))/g, suggestion:"$1던지", note:"과거 회상·강조의 뜻이라면 '-던지'를 씁니다. 문맥을 확인하세요.", severity:"review"},
+  {name:"-든가/-던가", re:/([가-힣]+)던가(?=\s|[,.!?]|$)/g, suggestion:"$1든가", note:"선택의 뜻이라면 '-든가'가 맞습니다. 회상 의미라면 '-던가'가 맞을 수 있습니다.", severity:"review"},
+
+  /* 대로 · 만큼 · 바 · 데 */
+  {name:"한 대로", re:/한대로/g, suggestion:"한 대로", note:"의존 명사 '대로'는 관형어 뒤에서 띄어 씁니다."},
+  {name:"본 대로", re:/본대로/g, suggestion:"본 대로", note:"의존 명사 '대로'는 관형어 뒤에서 띄어 씁니다."},
+  {name:"들은 대로", re:/들은대로/g, suggestion:"들은 대로", note:"의존 명사 '대로'는 관형어 뒤에서 띄어 씁니다."},
+  {name:"말한 대로", re:/말한대로/g, suggestion:"말한 대로", note:"의존 명사 '대로'는 관형어 뒤에서 띄어 씁니다."},
+  {name:"생각한 만큼", re:/생각한만큼/g, suggestion:"생각한 만큼", note:"의존 명사 '만큼'은 앞말과 띄어 씁니다."},
+  {name:"아는 만큼", re:/아는만큼/g, suggestion:"아는 만큼", note:"의존 명사 '만큼'은 앞말과 띄어 씁니다."},
+  {name:"본 만큼", re:/본만큼/g, suggestion:"본 만큼", note:"의존 명사 '만큼'은 앞말과 띄어 씁니다."},
+  {name:"할 만큼", re:/할만큼/g, suggestion:"할 만큼", note:"의존 명사 '만큼'은 앞말과 띄어 씁니다."},
+  {name:"알고 있는 바", re:/알고있는바/g, suggestion:"알고 있는 바", note:"'알고 있는 바'처럼 띄어 씁니다."},
+  {name:"말할 바", re:/말할바/g, suggestion:"말할 바", note:"의존 명사 '바'는 관형어 뒤에서 띄어 씁니다."},
+  {name:"갈 데", re:/갈데(?=\s|[,.!?]|$)/g, suggestion:"갈 데", note:"의존 명사 '데'는 관형어 뒤에서 띄어 씁니다."},
+  {name:"할 데", re:/할데(?=\s|[,.!?]|$)/g, suggestion:"할 데", note:"의존 명사 '데'는 관형어 뒤에서 띄어 씁니다."},
+  {name:"본 데", re:/본데(?=\s|[,.!?]|$)/g, suggestion:"본 데", note:"의존 명사 '데'는 관형어 뒤에서 띄어 씁니다. 다만 연결 어미 '-ㄴ데'일 수도 있으니 문맥을 확인하세요.", severity:"review"},
+
+  /* 밖에 · 뿐 · 만 */
+  {name:"나뿐", re:/나\s+뿐/g, suggestion:"나뿐", note:"조사 '뿐'은 체언 뒤에 붙여 씁니다."},
+  {name:"너뿐", re:/너\s+뿐/g, suggestion:"너뿐", note:"조사 '뿐'은 체언 뒤에 붙여 씁니다."},
+  {name:"그뿐", re:/그\s+뿐/g, suggestion:"그뿐", note:"조사 '뿐'은 체언 뒤에 붙여 씁니다."},
+  {name:"이뿐", re:/이\s+뿐/g, suggestion:"이뿐", note:"조사 '뿐'은 체언 뒤에 붙여 씁니다."},
+  {name:"그것뿐", re:/그것\s+뿐/g, suggestion:"그것뿐", note:"조사 '뿐'은 체언 뒤에 붙여 씁니다."},
+  {name:"이것뿐", re:/이것\s+뿐/g, suggestion:"이것뿐", note:"조사 '뿐'은 체언 뒤에 붙여 씁니다."},
+  {name:"밖에", re:/밖에\s+(?:없|못)/g, suggestion:"붙임 확인", note:"'밖에'는 앞말에 붙여 쓰는 보조사입니다. 앞말과의 붙임을 확인하세요.", severity:"review"},
+  {name:"만", re:/([가-힣]+)\s+만(?=\s)/g, suggestion:"붙임 확인", note:"보조사 '만'은 일반적으로 앞말에 붙여 씁니다. 다만 의존 명사 용법도 있으니 문맥을 확인하세요.", severity:"review"},
+
+  /* 자주 틀리는 낱말 */
+  {name:"대가", re:/댓가/g, suggestion:"대가", note:"'대가'가 맞는 표기입니다."},
+  {name:"희한하다", re:/희안하/g, suggestion:"희한하…", note:"'희한하다'가 맞는 표기입니다."},
+  {name:"어이없다", re:/어의없/g, suggestion:"어이없…", note:"'어이없다'가 맞는 표기입니다."},
+  {name:"웬만하다", re:/왠만하/g, suggestion:"웬만하…", note:"'웬만하다'가 맞는 표기입니다."},
+  {name:"뒤치다꺼리", re:/뒤치닥거리/g, suggestion:"뒤치다꺼리", note:"'뒤치다꺼리'가 맞는 표기입니다."},
+  {name:"개수", re:/갯수/g, suggestion:"개수", note:"'개수'가 맞는 표기입니다."},
+  {name:"초점", re:/촛점/g, suggestion:"초점", note:"'초점'이 맞는 표기입니다."},
+
+  /* 소설에서 자주 쓰는 표현 */
+  {name:"눈앞", re:/눈\s+앞/g, suggestion:"눈앞", note:"'눈앞'은 한 단어이므로 붙여 씁니다."},
+  {name:"머릿속", re:/머리\s+속/g, suggestion:"머릿속", note:"'머릿속'은 한 단어이므로 붙여 씁니다."},
+  {name:"가슴속", re:/가슴\s+속/g, suggestion:"가슴속", note:"'가슴속'은 한 단어이므로 붙여 씁니다."},
+  {name:"마음속", re:/마음\s+속/g, suggestion:"마음속", note:"'마음속'은 한 단어이므로 붙여 씁니다."},
+  {name:"손끝", re:/손\s+끝/g, suggestion:"손끝", note:"'손끝'은 한 단어이므로 붙여 씁니다."},
+  {name:"발끝", re:/발\s+끝/g, suggestion:"발끝", note:"'발끝'은 한 단어이므로 붙여 씁니다."},
+  {name:"귓가", re:/귀\s+가/g, suggestion:"귓가", note:"'귓가'는 한 단어이므로 붙여 씁니다."},
+  {name:"눈가", re:/눈\s+가/g, suggestion:"눈가", note:"'눈가'는 한 단어이므로 붙여 씁니다."},
+
+  /* 시간·수량 표현 */
+  {name:"몇 년", re:/몇년/g, suggestion:"몇 년", note:"기간을 나타내는 '년'은 앞말과 띄어 씁니다."},
+  {name:"몇 개월", re:/몇개월/g, suggestion:"몇 개월", note:"단위 명사 '개월'은 앞말과 띄어 씁니다."},
+  {name:"몇 달", re:/몇달/g, suggestion:"몇 달", note:"단위 명사 '달'은 앞말과 띄어 씁니다."},
+  {name:"오랫동안", re:/오랜\s+동안/g, suggestion:"오랫동안", note:"'오랫동안'은 한 단어로 굳어져 붙여 씁니다."},
+  {name:"한동안", re:/한\s+동안/g, suggestion:"한동안", note:"'한동안'은 한 단어로 붙여 씁니다."},
+
+  /* 보조 용언·표기 통일 권장 */
+  {name:"해 보다/해보다", re:/해\s?보다/g, suggestion:"표기 통일 확인", note:"'해 보다/해보다'는 문맥에 따라 띄거나 붙일 수 있습니다. 작품 안에서 한 가지로 통일해 보세요.", severity:"review"},
+  {name:"읽어 보다/읽어보다", re:/읽어\s?보다/g, suggestion:"표기 통일 확인", note:"'읽어 보다/읽어보다'는 문맥에 따라 둘 다 가능합니다. 작품 내 표기를 통일해 보세요.", severity:"review"},
+  {name:"알아 보다/알아보다", re:/알아\s?보다/g, suggestion:"표기 통일 확인", note:"'알아 보다/알아보다'는 문맥에 따라 둘 다 가능합니다. 작품 내 표기를 통일해 보세요.", severity:"review"},
+  {name:"들어 보다/들어보다", re:/들어\s?보다/g, suggestion:"표기 통일 확인", note:"'들어 보다/들어보다'는 문맥에 따라 둘 다 가능합니다. 작품 내 표기를 통일해 보세요.", severity:"review"},
+  {name:"돌아 보다/돌아보다", re:/돌아\s?보다/g, suggestion:"표기 통일 확인", note:"'돌아 보다/돌아보다'는 문맥에 따라 둘 다 가능합니다. 작품 내 표기를 통일해 보세요.", severity:"review"},
+  {name:"도와 주다/도와주다", re:/도와\s?주다|도와\s?줬|도와\s?준다|도와\s?주는/g, suggestion:"표기 통일 확인", note:"'도와주다/도와 주다'는 문맥에 따라 둘 다 가능합니다. 작품 내 표기를 통일해 보세요.", severity:"review"},
+
+  /* 추가 활용 오타 */
+  {name:"닫았다", re:/닫앗다/g, suggestion:"닫았다", note:"과거형은 '닫았다'로 씁니다."},
+  {name:"잡았다", re:/잡앗다/g, suggestion:"잡았다", note:"과거형은 '잡았다'로 씁니다."},
+  {name:"남았다", re:/남앗다/g, suggestion:"남았다", note:"과거형은 '남았다'로 씁니다."},
+  {name:"앉았다", re:/앉앗다/g, suggestion:"앉았다", note:"과거형은 '앉았다'로 씁니다."},
+  {name:"돌았다", re:/돌앗다/g, suggestion:"돌았다", note:"과거형은 '돌았다'로 씁니다."},
+  {name:"받았다", re:/받앗다/g, suggestion:"받았다", note:"과거형은 '받았다'로 씁니다."},
+  {name:"닿았다", re:/닿앗다/g, suggestion:"닿았다", note:"과거형은 '닿았다'로 씁니다."},
+  {name:"멈췄다", re:/멈췃다/g, suggestion:"멈췄다", note:"'멈추었다'의 준말은 '멈췄다'입니다."},
+  {name:"깨달았다", re:/깨달앗다/g, suggestion:"깨달았다", note:"과거형은 '깨달았다'로 씁니다."},
+  {name:"떠올렸다", re:/떠올렷다/g, suggestion:"떠올렸다", note:"과거형은 '떠올렸다'로 씁니다."},
+  {name:"흔들렸다", re:/흔들렷다/g, suggestion:"흔들렸다", note:"과거형은 '흔들렸다'로 씁니다."},
+  {name:"떨렸다", re:/떨렷다/g, suggestion:"떨렸다", note:"과거형은 '떨렸다'로 씁니다."},
+  {name:"번졌다", re:/번졋다/g, suggestion:"번졌다", note:"과거형은 '번졌다'로 씁니다."},
+
+  /* 소설에서 자주 쓰는 수량·단위 */
+  {name:"한 걸음", re:/한걸음/g, suggestion:"한 걸음", note:"수 관형사와 단위 명사 '걸음'은 띄어 씁니다."},
+  {name:"두 걸음", re:/두걸음/g, suggestion:"두 걸음", note:"수 관형사와 단위 명사 '걸음'은 띄어 씁니다."},
+  {name:"몇 걸음", re:/몇걸음/g, suggestion:"몇 걸음", note:"'몇 걸음'은 띄어 씁니다."},
+  {name:"한 발", re:/한발(?=\s*(?:앞|뒤|물러|다가|내딛|옮기)|[,.!?]|$)/g, suggestion:"한 발", note:"걸음의 단위를 뜻하는 '발'은 앞말과 띄어 씁니다.", severity:"review"},
+  {name:"두 발", re:/두발(?=\s*(?:앞|뒤|물러|다가|내딛|옮기)|[,.!?]|$)/g, suggestion:"두 발", note:"걸음의 단위를 뜻하는 '발'은 앞말과 띄어 씁니다.", severity:"review"},
+  {name:"한 사람", re:/한사람/g, suggestion:"한 사람", note:"수 관형사 '한'과 명사 '사람'은 띄어 씁니다."},
+  {name:"두 사람", re:/두사람/g, suggestion:"두 사람", note:"수 관형사 '두'와 명사 '사람'은 띄어 씁니다."},
+  {name:"몇 사람", re:/몇사람/g, suggestion:"몇 사람", note:"'몇 사람'은 띄어 씁니다."},
+  {name:"몇 마디", re:/몇마디/g, suggestion:"몇 마디", note:"'몇 마디'는 띄어 씁니다."},
+  {name:"두 마디", re:/두마디/g, suggestion:"두 마디", note:"'두 마디'는 띄어 씁니다."},
+  {name:"한 손", re:/한손(?=\s|[,.!?]|$)/g, suggestion:"한 손", note:"'한 손'은 띄어 씁니다."},
+  {name:"두 손", re:/두손(?=\s|[,.!?]|$)/g, suggestion:"두 손", note:"'두 손'은 띄어 씁니다."},
+  {name:"한쪽", re:/한\s+쪽/g, suggestion:"한쪽", note:"'한쪽'은 한 단어이므로 붙여 씁니다."},
+  {name:"양쪽", re:/양\s+쪽/g, suggestion:"양쪽", note:"'양쪽'은 한 단어이므로 붙여 씁니다."},
+  {name:"이쪽", re:/이\s+쪽/g, suggestion:"이쪽", note:"'이쪽'은 한 단어이므로 붙여 씁니다."},
+  {name:"저쪽", re:/저\s+쪽/g, suggestion:"저쪽", note:"'저쪽'은 한 단어이므로 붙여 씁니다."},
+  {name:"그중", re:/그\s+중/g, suggestion:"그중", note:"'그중'은 한 단어이므로 붙여 씁니다."},
+  {name:"한편", re:/한\s+편(?=\s*(?:으로|에서는|은|만|도)|[,.!?]|$)/g, suggestion:"한편", note:"'한편'은 한 단어로 쓰이는 경우가 많습니다. 문맥을 확인하세요.", severity:"review"},
+
+  /* 문장부호·공백 */
+  {name:"중복 공백", re:/ {2,}/g, suggestion:"공백 1칸", note:"연속된 공백이 있습니다."},
+  {name:"문장부호 앞 공백", re:/\s+([,.!?;:])/g, suggestion:"문장부호 앞 공백 삭제", note:"문장부호 바로 앞에는 보통 공백을 두지 않습니다."},
+  {name:"쉼표 뒤 공백", re:/,(?=[가-힣A-Za-z0-9“"'‘])/g, suggestion:", 뒤 공백", note:"쉼표 뒤에는 보통 한 칸 띄어 씁니다.", severity:"review"},
+  {name:"중복 물음/느낌표", re:/([!?])\1{1,}/g, suggestion:"기호 정리", note:"물음표·느낌표가 반복되었습니다. 의도된 강조가 아니라면 줄여 보세요.", severity:"review"},
+  {name:"따옴표 짝 확인", re:/["“][^"”\n]{0,120}$|^[^"“\n]{0,120}["”]/gm, suggestion:"따옴표 짝 확인", note:"여는/닫는 따옴표의 짝을 확인해 보세요.", severity:"review"},
+
+  {name:"문장부호 뒤 붙음", re:/([.!?])(?=[가-힣A-Za-z0-9])/g, suggestion:"문장부호 뒤 공백 확인", note:"문장부호 뒤에 다음 문장이 바로 붙어 있습니다."},
+  {name:"되어/돼", re:/되어서/g, suggestion:"돼서 또는 되어서", note:"둘 다 가능하지만 작품 내 표기를 통일할 수 있습니다.", severity:"review"},
   {name:"말줄임표", re:/\.{3,}/g, suggestion:"······", note:"현재 작업 기준에 맞춰 말줄임표 표기를 확인해 보세요."},
-  {name:"따옴표 뒤 공백", re:/[”’"](?=[가-힣A-Za-z0-9])/g, suggestion:"문맥 확인", note:"닫는 따옴표 뒤에 바로 글자가 이어집니다. 의도된 표기인지 확인하세요."},
+  {name:"따옴표 뒤 공백", re:/[”’"](?=[가-힣A-Za-z0-9])/g, suggestion:"문맥 확인", note:"닫는 따옴표 뒤에 바로 글자가 이어집니다. 의도된 표기인지 확인하세요.", severity:"review"},
   {name:"괄호 안쪽 공백", re:/\(\s+|\s+\)/g, suggestion:"괄호 안쪽 공백 제거", note:"괄호 바로 안쪽의 불필요한 공백을 확인하세요."},
-  {name:"조사 반복", re:/(은|는|이|가|을|를|의)\s+\1/g, suggestion:"문맥 확인", note:"같은 조사가 연달아 반복되었습니다."}
+  {name:"조사 반복", re:/(은|는|이|가|을|를|의)\s+\1/g, suggestion:"문맥 확인", note:"같은 조사가 연달아 반복되었습니다.", severity:"review"}
 ];
 
 let spellHits=[];
@@ -2548,6 +3895,200 @@ function clearSpellMarks(){
   document.querySelectorAll(".cell .spell-warn").forEach(x=>{
     const p=x.parentNode; p.replaceChild(document.createTextNode(x.textContent),x); p.normalize();
   });
+}
+
+
+function collectStyleIssues(cell,text){
+  const row=+cell.dataset.row, doc=+cell.dataset.doc;
+  const push=(start,end,suggestion,note)=>{
+    if(start<0 || end<=start) return;
+    spellHits.push({
+      cell,row,doc,start,end,text:text.slice(start,end),
+      name:"문체 점검",suggestion,note,severity:"style"
+    });
+  };
+
+  // 소설에서 자주 반복되는 표현
+  const watchWords=["조금","아주","그저","문득","천천히","시선","눈길","표정","마음","가만히","조용히","살며시"];
+  for(const word of watchWords){
+    const re=new RegExp(word,"g");
+    const hits=[...text.matchAll(re)];
+    if(hits.length>=3){
+      push(hits[2].index,hits[2].index+word.length,`${word} 반복`,
+        `이 문단에서 '${word}'이 ${hits.length}회 사용되었습니다. 가까운 반복이 의도된 것인지 확인해 보세요.`);
+    }
+  }
+
+  // 일반 단어가 한 문단에서 4회 이상 반복되는 경우
+  const stop=new Set(["그리고","그러나","하지만","그런데","것은","것을","것이","있는","없는","했다","있었다","그녀","자신","사람"]);
+  const words=[...text.matchAll(/[가-힣]{2,}/g)];
+  const counts=new Map();
+  for(const m of words){
+    const w=m[0];
+    if(stop.has(w)) continue;
+    if(!counts.has(w)) counts.set(w,[]);
+    counts.get(w).push(m.index);
+  }
+  for(const [w,pos] of counts){
+    const repeatThreshold=w.length>=4 ? 3 : 4;
+    if(pos.length>=repeatThreshold && !watchWords.includes(w)){
+      const at=pos[repeatThreshold-1];
+      push(at,at+w.length,`${w} 반복`,
+        `같은 단어 '${w}'이 이 문단에서 ${pos.length}회 반복됩니다. 유의어나 문장 구조를 바꿀 수 있는지 확인해 보세요.`);
+    }
+  }
+
+  const sentences=[...text.matchAll(/[^.!?。！？]+[.!?。！？”』"]*/g)]
+    .map(m=>({text:m[0].trim(),start:m.index,end:m.index+m[0].length}))
+    .filter(s=>s.text);
+
+  // 지나치게 긴 문장
+  for(const s of sentences){
+    const len=s.text.replace(/\s/g,"").length;
+    if(len>=150){
+      push(s.start,s.end,"긴 문장",
+        `공백 제외 약 ${len}자의 긴 문장입니다. 호흡을 의도한 것이 아니라면 분리할 수 있는지 확인해 보세요.`);
+    }
+    const comma=(s.text.match(/,/g)||[]).length;
+    if(comma>=6){
+      push(s.start,s.end,"쉼표 과다",
+        `한 문장에 쉼표가 ${comma}개 있습니다. 문장 구조가 지나치게 길어지지 않았는지 확인해 보세요.`);
+    }
+  }
+
+  // 짧은 문장 3개 이상 연속
+  for(let i=0;i<=sentences.length-3;i++){
+    const group=sentences.slice(i,i+3);
+    if(group.every(s=>s.text.replace(/\s/g,"").length<=24)){
+      push(group[0].start,group[2].end,"짧은 문장 연속",
+        "짧은 문장이 세 문장 이상 연속됩니다. 의도한 리듬이 아니라면 문장 호흡을 조정해 보세요.");
+      break;
+    }
+  }
+
+  // 같은 시작어 3문장 연속
+  for(let i=0;i<=sentences.length-3;i++){
+    const starts=sentences.slice(i,i+3).map(s=>{
+      const m=s.text.match(/^([가-힣A-Za-z]+(?:은|는|이|가|도|만)?)/);
+      return m?m[1]:"";
+    });
+    if(starts[0] && starts[0]===starts[1] && starts[1]===starts[2]){
+      push(sentences[i+2].start,Math.min(sentences[i+2].end,sentences[i+2].start+starts[2].length),
+        "문장 시작 반복",`세 문장이 연속으로 '${starts[0]}'에서 시작합니다. 의도된 반복인지 확인해 보세요.`);
+      break;
+    }
+  }
+
+  // 같은 종결형 3문장 연속
+  const endingKey=s=>{
+    const clean=s.text.replace(/[”』"'’.!?。！？\s]+$/g,"");
+    const m=clean.match(/([가-힣]{1,6}(?:했다|였다|었다|았다|됐다|있었다|없었다|한다|된다|이다|었다))$/);
+    if(m) return m[1].slice(-4);
+    const m2=clean.match(/([가-힣]{1,5}다)$/);
+    return m2?m2[1].slice(-3):"";
+  };
+  for(let i=0;i<=sentences.length-3;i++){
+    const e=sentences.slice(i,i+3).map(endingKey);
+    if(e[0] && e[0]===e[1] && e[1]===e[2]){
+      push(sentences[i+2].start,sentences[i+2].end,"문장 어미 반복",
+        `비슷한 종결형 '${e[0]}'이 세 문장 연속 이어집니다. 단조롭게 느껴지는지 확인해 보세요.`);
+      break;
+    }
+  }
+
+  // 말줄임표 표기 혼용
+  const variants=[];
+  if(text.includes("······")) variants.push("······");
+  if(text.includes("……")) variants.push("……");
+  if(/\.{3,}/.test(text)) variants.push("...");
+  if(/···(?!···)/.test(text)) variants.push("···");
+  if(variants.length>=2){
+    const at=Math.max(0,text.search(/······|……|\.{3,}|···/));
+    push(at,Math.min(text.length,at+6),"말줄임표 혼용",
+      `한 문단에서 ${variants.join(", ")} 표기가 함께 사용되었습니다. 작품의 말줄임표 표기를 통일해 보세요.`);
+  }
+}
+
+
+function normalizeSpellSeverity(value){
+  if(value==="style") return "style";
+  if(value==="review") return "review";
+  return "high";
+}
+
+function styleSentenceEndingKey(text){
+  const clean=(text||"").replace(/[”』"'’.!?。！？\s]+$/g,"");
+  if(!clean) return "";
+  const m=clean.match(/([가-힣]{2,8}다)$/);
+  return m ? m[1].slice(-4) : "";
+}
+
+function collectDocumentStyleIssues(cells){
+  const byDoc=new Map();
+  cells.forEach(cell=>{
+    const doc=+cell.dataset.doc;
+    if(!byDoc.has(doc)) byDoc.set(doc,[]);
+    byDoc.get(doc).push(cell);
+  });
+
+  for(const [doc,docCells] of byDoc){
+    docCells.sort((a,b)=>(+a.dataset.row)-(+b.dataset.row));
+    const stream=[];
+
+    for(const cell of docCells){
+      const text=cell.innerText||"";
+      const matches=[...text.matchAll(/[^.!?。！？]+[.!?。！？”』"]*/g)];
+      for(const m of matches){
+        const s=m[0].trim();
+        if(!s) continue;
+        stream.push({
+          cell,
+          row:+cell.dataset.row,
+          doc,
+          text:s,
+          start:m.index,
+          end:m.index+m[0].length
+        });
+      }
+    }
+
+    // 행 경계를 넘어가도 같은 종결형이 세 문장 연속이면 문체 점검.
+    for(let i=0;i<=stream.length-3;i++){
+      const group=stream.slice(i,i+3);
+      const ends=group.map(x=>styleSentenceEndingKey(x.text));
+      if(ends[0] && ends[0]===ends[1] && ends[1]===ends[2]){
+        const h=group[2];
+        spellHits.push({
+          cell:h.cell,row:h.row,doc:h.doc,start:h.start,end:h.end,text:h.text,
+          name:"문체 점검",suggestion:"문장 어미 반복",
+          note:`행 경계를 포함해 비슷한 종결형 '${ends[0]}'이 세 문장 연속 이어집니다. 의도한 리듬인지 확인해 보세요.`,
+          severity:"style"
+        });
+        break;
+      }
+    }
+
+    // 같은 짧은 문장이 가까운 범위에서 반복되는 경우.
+    for(let i=0;i<stream.length;i++){
+      const base=stream[i].text.replace(/[”』"'’.!?。！？\s]+/g,"");
+      if(!base || base.length>28) continue;
+      let count=1, last=i;
+      for(let j=i+1;j<Math.min(stream.length,i+5);j++){
+        const cur=stream[j].text.replace(/[”』"'’.!?。！？\s]+/g,"");
+        if(cur===base){ count++; last=j; }
+      }
+      if(count>=2){
+        const h=stream[last];
+        spellHits.push({
+          cell:h.cell,row:h.row,doc:h.doc,start:h.start,end:h.end,text:h.text,
+          name:"문체 점검",suggestion:"같은 문장 반복",
+          note:`가까운 범위에서 '${stream[i].text.replace(/\s+/g," ").trim()}'이 ${count}회 반복됩니다. 의도한 반복인지 확인해 보세요.`,
+          severity:"style"
+        });
+        break;
+      }
+    }
+  }
 }
 
 function collectSpellIssues(){
@@ -2564,11 +4105,25 @@ function collectSpellIssues(){
         spellHits.push({
           cell, row:+cell.dataset.row, doc:+cell.dataset.doc,
           start:m.index, end:m.index+m[0].length, text:m[0],
-          name:rule.name, suggestion:rule.suggestion, note:rule.note
+          name:rule.name, suggestion:rule.suggestion, note:rule.note,
+          severity:normalizeSpellSeverity(rule.severity)
         });
         if(m[0].length===0) re.lastIndex++;
       }
     });
+    collectStyleIssues(cell,text);
+  });
+  collectDocumentStyleIssues(cells);
+
+  // 같은 규칙이 중복 선언되어 있어도 결과에는 한 번만 남긴다.
+  // 분류값도 high / review / style 세 종류로만 고정한다.
+  spellHits.forEach(h=>h.severity=normalizeSpellSeverity(h.severity));
+  const seen=new Set();
+  spellHits=spellHits.filter(h=>{
+    const key=[h.doc,h.row,h.name,h.suggestion,h.severity].join("|");
+    if(seen.has(key)) return false;
+    seen.add(key);
+    return true;
   });
   return spellHits;
 }
@@ -2587,7 +4142,7 @@ function markIssues(){
     for(const h of hits){
       if(h.start<pos) continue;
       out+=esc(text.slice(pos,h.start));
-      out+=`<span class="spell-warn" title="${esc(h.note)}">${esc(text.slice(h.start,h.end))}</span>`;
+      out+=`<span class="spell-warn ${h.severity==="review"?"spell-review":h.severity==="style"?"spell-style":""}" title="${esc(h.note)}">${esc(text.slice(h.start,h.end))}</span>`;
       pos=h.end;
     }
     out+=esc(text.slice(pos));
@@ -2607,45 +4162,71 @@ function runSpellCheck(){
   document.querySelector("#spellBtn")?.classList.add("active");
   clearSpellMarks();
   collectSpellIssues();
+
+  const order={high:0,review:1,style:2};
+  spellHits.sort((a,b)=>
+    (order[a.severity]??0)-(order[b.severity]??0) ||
+    a.doc-b.doc || a.row-b.row || a.start-b.start
+  );
+
   markIssues();
   const panel=document.querySelector("#spellPanel");
   const list=document.querySelector("#spellList");
   panel.classList.add("open");
-  document.querySelector("#spellCount").textContent=`${spellHits.length}개 의심 항목`;
+
+  const highHits=spellHits.filter(h=>h.severity==="high");
+  const reviewHits=spellHits.filter(h=>h.severity==="review");
+  const styleHits=spellHits.filter(h=>h.severity==="style");
+  document.querySelector("#spellCount").textContent=
+    `${spellHits.length}개 · 오류 ${highHits.length} · 확인 ${reviewHits.length} · 문체 ${styleHits.length}`;
+
   if(!spellHits.length){
-    list.innerHTML='<div class="spell-item">현재 규칙에서 발견된 의심 항목이 없습니다.</div>';
+    list.innerHTML='<div class="spell-item">현재 규칙에서 발견된 점검 항목이 없습니다.</div>';
     return;
   }
-  list.innerHTML=spellHits.map((h,i)=>{
-    const labels=["초고","개고","퇴고"];
+
+  const labels=["초고","개고","퇴고"];
+  const renderHit=(h)=>{
+    const i=spellHits.indexOf(h);
     const snippet=(h.cell.innerText||"").slice(Math.max(0,h.start-22),Math.min(h.cell.innerText.length,h.end+22));
-    return `<div class="spell-item">
+    const itemClass=h.severity==="style"?"spell-item-style":h.severity==="review"?"spell-item-review":"";
+    return `<div class="spell-item ${itemClass}">
       <span class="spell-type">${esc(h.suggestion)}</span>
       <span>${labels[h.doc]} ${h.row+1}문단</span><br>
       <span class="spell-snippet">…${esc(snippet)}…</span><br>
       <span>${esc(h.note)}</span>
       <button type="button" data-spell-jump="${i}">해당 문단 보기</button>
     </div>`;
-  }).join("");
+  };
+
+  let out="";
+  const renderGroup=(hits,label,groupClass="")=>{
+    if(!hits.length) return "";
+    return `<details class="spell-group">
+      <summary class="spell-group-head ${groupClass}">
+        <strong>${label}</strong>
+        <span class="spell-group-count">${hits.length}개</span>
+      </summary>
+      <div class="spell-group-body">${hits.map(renderHit).join("")}</div>
+    </details>`;
+  };
+  out+=renderGroup(highHits,"오류 가능성 높음","");
+  out+=renderGroup(reviewHits,"확인 필요","review");
+  out+=renderGroup(styleHits,"문체 점검","style");
+  list.innerHTML=out;
+
   document.querySelectorAll("[data-spell-jump]").forEach(btn=>btn.onclick=()=>{
     const h=spellHits[+btn.dataset.spellJump];
     if(!h) return;
-
-    // 매번 현재 DOM에서 해당 셀을 다시 찾습니다.
-    // focus()는 blur -> render()를 일으켜 밑줄 표시가 사라질 수 있으므로 사용하지 않습니다.
     const cell=document.querySelector(`.cell[data-doc="${h.doc}"][data-row="${h.row}"]`);
     if(!cell) return;
-
     cell.scrollIntoView({behavior:"smooth",block:"center",inline:"nearest"});
-
-    // 밑줄을 건드리지 않는 별도 강조 클래스만 잠깐 적용
     cell.classList.remove("spell-target-flash");
-    void cell.offsetWidth; // 애니메이션 재시작
+    void cell.offsetWidth;
     cell.classList.add("spell-target-flash");
     setTimeout(()=>cell.classList.remove("spell-target-flash"),1100);
   });
 }
-
 
 document.querySelector("#spellBtn").onclick=()=>{
   const panel=document.querySelector("#spellPanel");
