@@ -7,7 +7,7 @@
 <link rel="apple-touch-icon" href="./favicon.png?v=2">
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>아오츠바 퇴고 작업실</title>
+<title>아오츠바 작업실</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1313,6 +1313,79 @@ main{
   outline:none;
 }
 
+
+/* 제목을 눌러 여는 자유 메모장 */
+.memo-trigger{
+  cursor:pointer;
+  user-select:none;
+}
+.memo-trigger:focus-visible{
+  outline:2px solid rgba(75,80,204,.35);
+  outline-offset:4px;
+  border-radius:6px;
+}
+.memo-panel{
+  display:none;
+  position:relative;
+  z-index:4;
+  max-width:1500px;
+  margin:0 auto;
+  padding:14px 20px 0;
+}
+.memo-panel.open{display:block}
+.memo-shell{
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:14px;
+  box-shadow:var(--shadow);
+  overflow:hidden;
+}
+.memo-head{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:10px 12px;
+  border-bottom:1px solid var(--line);
+}
+.memo-head strong{
+  font-size:13px;
+  color:var(--accent);
+}
+.memo-status{
+  font-size:10px;
+  color:#A1A6B3;
+}
+.memo-close{
+  margin-left:auto;
+  padding:5px 8px;
+  font-size:10px;
+  color:var(--muted);
+  background:#fff;
+}
+.memo-text{
+  display:block;
+  width:100%;
+  min-height:260px;
+  resize:vertical;
+  border:0;
+  outline:0;
+  padding:16px;
+  background:#fff;
+  color:var(--text);
+  font:inherit;
+  font-size:12pt;
+  line-height:1.75;
+  white-space:pre-wrap;
+}
+.memo-text::placeholder{color:#B4B8C4}
+@media(max-width:900px){
+  .memo-panel{padding:10px 20px 0}
+  .memo-text{
+    min-height:42vh;
+    font-size:16px;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -1322,7 +1395,7 @@ main{
   <div class="top">
     <div class="top-left">
       <div class="brand-row">
-        <div class="brand"><span class="brand-secret">아오츠바</span><span class="brand-rest"> 퇴고 작업실</span></div>
+        <div class="brand memo-trigger" id="memoTrigger" role="button" tabindex="0" aria-controls="memoPanel" aria-expanded="false" title="메모장 열기"><span class="brand-secret">아오츠바</span><span class="brand-rest"> 작업실</span></div>
         <button type="button" id="toggleProofBtn" class="proof-toggle on">퇴고 ON</button>
       </div>
       <div class="title-input-wrap">
@@ -1348,6 +1421,17 @@ main{
     </div>
   </div>
 </header>
+
+<section class="memo-panel" id="memoPanel" aria-hidden="true">
+  <div class="memo-shell">
+    <div class="memo-head">
+      <strong>메모장</strong>
+      <span class="memo-status" id="memoStatus">자동 저장</span>
+      <button type="button" class="memo-close" id="memoClose">닫기</button>
+    </div>
+    <textarea id="memoText" class="memo-text" placeholder="아무거나 적어 두세요." aria-label="메모장"></textarea>
+  </div>
+</section>
 
 <main>
   <details class="upload-accordion">
@@ -4355,6 +4439,68 @@ document.querySelector("#spellBtn").onclick=()=>{
 document.querySelector("#closeSpell").onclick=()=>{document.querySelector("#spellPanel").classList.remove("open");document.querySelector("#spellBtn")?.classList.remove("active");clearSpellMarks();};
 
 
+
+const MEMO_STORAGE_KEY="aotsubaRevisionWorkshop.memo.v1";
+let memoSaveTimer=null;
+
+function setMemoOpen(open){
+  const panel=document.querySelector("#memoPanel");
+  const trigger=document.querySelector("#memoTrigger");
+  if(!panel||!trigger) return;
+  panel.classList.toggle("open",open);
+  panel.setAttribute("aria-hidden",String(!open));
+  trigger.setAttribute("aria-expanded",String(open));
+  if(open){
+    requestAnimationFrame(()=>document.querySelector("#memoText")?.focus());
+  }
+}
+
+function loadMemoText(){
+  try{
+    const saved=localStorage.getItem(MEMO_STORAGE_KEY);
+    if(saved!==null){
+      const memo=document.querySelector("#memoText");
+      if(memo) memo.value=saved;
+    }
+  }catch(err){
+    console.error("메모 불러오기 실패",err);
+  }
+}
+
+function saveMemoText(){
+  try{
+    const memo=document.querySelector("#memoText");
+    if(!memo) return;
+    localStorage.setItem(MEMO_STORAGE_KEY,memo.value);
+    const status=document.querySelector("#memoStatus");
+    if(status){
+      status.textContent="저장됨";
+      clearTimeout(status.__resetTimer);
+      status.__resetTimer=setTimeout(()=>status.textContent="자동 저장",900);
+    }
+  }catch(err){
+    console.error("메모 저장 실패",err);
+  }
+}
+
+document.querySelector("#memoTrigger")?.addEventListener("click",()=>{
+  setMemoOpen(!document.querySelector("#memoPanel")?.classList.contains("open"));
+});
+document.querySelector("#memoTrigger")?.addEventListener("keydown",e=>{
+  if(e.key==="Enter" || e.key===" "){
+    e.preventDefault();
+    setMemoOpen(!document.querySelector("#memoPanel")?.classList.contains("open"));
+  }
+});
+document.querySelector("#memoClose")?.addEventListener("click",()=>setMemoOpen(false));
+document.querySelector("#memoText")?.addEventListener("input",()=>{
+  const status=document.querySelector("#memoStatus");
+  if(status) status.textContent="저장 중…";
+  clearTimeout(memoSaveTimer);
+  memoSaveTimer=setTimeout(saveMemoText,300);
+});
+loadMemoText();
+
 const TEMP_SAVE_KEY="aotsubaRevisionWorkshop.temp.v1";
 const TEMP_SAVE_INTERVAL=5*60*1000;
 
@@ -4384,7 +4530,8 @@ function buildTempSaveState(){
     segmentMode:document.querySelector("#segmentMode")?.value || "original",
     fontFamily:document.querySelector("#fontFamilySelect")?.value || "",
     fontSize:document.querySelector("#fontSizeSelect")?.value || "11pt",
-    manualTexts:[...document.querySelectorAll(".drop .manual-text")].map(el=>el.value)
+    manualTexts:[...document.querySelectorAll(".drop .manual-text")].map(el=>el.value),
+    memoText:document.querySelector("#memoText")?.value || ""
   };
 }
 
@@ -4445,6 +4592,12 @@ function restoreTempDraft(){
   document.querySelectorAll(".drop .manual-text").forEach((el,i)=>{
     el.value=manualTexts[i] ?? (rawDocs[i]?.join("\n\n") || "");
   });
+
+  const memo=document.querySelector("#memoText");
+  if(memo && typeof saved.memoText==="string"){
+    memo.value=saved.memoText;
+    try{ localStorage.setItem(MEMO_STORAGE_KEY,saved.memoText); }catch(err){}
+  }
 
   document.body.classList.toggle("proof-off",!proofEnabled);
   const proofBtn=document.querySelector("#toggleProofBtn");
