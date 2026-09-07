@@ -1,0 +1,75 @@
+name: Apply UI tweaks
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch index.html
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+
+          s=s.replace('placeholder="아무거나 적어 두세요."','placeholder="망상을 시작합니다."',1)
+
+          old='''      <div class="action-row">
+        <div class="action-split">
+          <button type="button" id="demoBtn">예시</button>
+          <button type="button" id="tempSaveBtn">임시저장</button>
+        </div>
+        <div class="action-split">
+          <button type="button" id="tempLoadBtn">불러오기</button>
+          <button type="button" id="clearBtn">초기화</button>
+        </div>
+      </div>'''
+          new='''      <div class="action-row">
+        <div class="action-split">
+          <button type="button" id="demoBtn">예시</button>
+          <button type="button" id="clearBtn">초기화</button>
+        </div>
+        <div class="action-split">
+          <button type="button" id="tempSaveBtn">임시저장</button>
+          <button type="button" id="tempLoadBtn">불러오기</button>
+        </div>
+      </div>'''
+          if old not in s:
+              raise SystemExit('header action block not found')
+          s=s.replace(old,new,1)
+
+          marker='''document.querySelector("#fontFamilySelect")?.addEventListener("change",updateFontSelectPreview);
+updateFontSelectPreview();'''
+          addition='''document.querySelector("#fontFamilySelect")?.addEventListener("change",updateFontSelectPreview);
+updateFontSelectPreview();
+
+// 첫 접속 기본 본문 크기: 모바일 10pt, PC 11pt
+const defaultFontSizeSelect=document.querySelector("#fontSizeSelect");
+if(defaultFontSizeSelect){
+  defaultFontSizeSelect.value=window.matchMedia("(max-width:900px)").matches ? "10pt" : "11pt";
+}'''
+          if 'const defaultFontSizeSelect=' not in s:
+              if marker not in s:
+                  raise SystemExit('font preview marker not found')
+              s=s.replace(marker,addition,1)
+
+          p.write_text(s,encoding='utf-8')
+          PY
+      - name: Commit changes and remove temporary workflow
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          rm .github/workflows/apply-ui-tweaks.yml
+          git add index.html .github/workflows/apply-ui-tweaks.yml
+          git commit -m "Update memo placeholder, mobile font default, and action order"
+          git push
